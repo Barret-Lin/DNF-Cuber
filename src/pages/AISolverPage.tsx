@@ -1,44 +1,44 @@
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import { BrainCircuit, Send, Loader2, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { BrainCircuit, Send, Loader2, Sparkles, Key, X } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 
-// Safely get API key for both AI Studio and Vercel/Vite environments
-const getApiKey = () => {
-  try {
-    if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
-      return process.env.GEMINI_API_KEY;
-    }
-  } catch (e) {}
-  
-  try {
-    if (import.meta.env?.VITE_GEMINI_API_KEY) {
-      return import.meta.env.VITE_GEMINI_API_KEY;
-    }
-  } catch (e) {}
-  
-  return '';
-};
-
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: getApiKey() || 'missing-api-key' });
+// API Key is strictly managed in component state to ensure security and cleanup
 
 export default function AISolverPage() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState('');
 
-  const handleAskAI = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Clear API key on unmount (離開網頁後清除內存)
+  useEffect(() => {
+    return () => {
+      setApiKey('');
+      setTempApiKey('');
+    };
+  }, []);
+
+  const handleAskAI = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!query.trim()) return;
+
+    if (!apiKey) {
+      setShowApiKeyInput(true);
+      return;
+    }
 
     setIsLoading(true);
     setError('');
     setResponse('');
 
     try {
+      const ai = new GoogleGenAI({ apiKey });
       const result = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
         contents: `你是一位世界頂尖的魔術方塊教練與演算法專家。
@@ -51,9 +51,26 @@ export default function AISolverPage() {
       setResponse(result.text || '無法生成回應。');
     } catch (err: any) {
       console.error('AI Error:', err);
-      setError('發生錯誤，請檢查您的 API Key 或稍後再試。');
+      setError('發生錯誤，請檢查您的 API Key 是否正確或稍後再試。');
+      if (err.message?.includes('API key not valid') || err.message?.includes('403')) {
+        setApiKey('');
+        setShowApiKeyInput(true);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tempApiKey.trim()) {
+      setApiKey(tempApiKey.trim());
+      setShowApiKeyInput(false);
+      if (query.trim()) {
+        setTimeout(() => {
+          handleAskAI();
+        }, 100);
+      }
     }
   };
 
@@ -146,6 +163,73 @@ export default function AISolverPage() {
           )}
         </div>
       </div>
+
+      {/* API Key Modal */}
+      <AnimatePresence>
+        {showApiKeyInput && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                <div className="flex items-center text-cyan-400 font-bold text-lg">
+                  <Key className="w-5 h-5 mr-2" />
+                  系統驗證：請輸入 Gemini API Key
+                </div>
+                <button 
+                  onClick={() => setShowApiKeyInput(false)}
+                  className="text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  為了提供專屬的 AI 智能解法分析，請輸入您的 Gemini API Key。
+                  <br /><br />
+                  <span className="text-amber-400/90 font-medium">安全提示：</span>此金鑰僅會暫存於您當前的瀏覽器記憶體中，當您離開此頁面或重新整理時，系統將會立即清除內存，絕不保留您的 API Key。
+                </p>
+                <form onSubmit={handleApiKeySubmit} className="space-y-4">
+                  <div>
+                    <input
+                      type="password"
+                      value={tempApiKey}
+                      onChange={(e) => setTempApiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all font-mono text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKeyInput(false)}
+                      className="px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors text-sm font-medium"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!tempApiKey.trim()}
+                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-lg shadow-cyan-500/20"
+                    >
+                      驗證並發送問題
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
