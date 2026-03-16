@@ -1,12 +1,13 @@
 import { motion } from 'motion/react';
-import { Cuboid, Trophy, BrainCircuit } from 'lucide-react';
+import { Cuboid, Trophy, BrainCircuit, ExternalLink } from 'lucide-react';
+import { RubiksCubeIcon } from '../components/RubiksCubeIcon';
 
 export default function HomePage() {
   return (
-    <div className="space-y-16">
+    <div className="space-y-12 md:space-y-16">
       {/* Hero Section */}
-      <section className="text-center space-y-6 py-12 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] -z-10"></div>
+      <section className="text-center space-y-6 py-8 md:py-12 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 bg-cyan-500/20 rounded-full blur-[80px] md:blur-[100px] -z-10"></div>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -14,19 +15,32 @@ export default function HomePage() {
           className="flex justify-center"
         >
           <div className="p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-            <Cuboid className="h-20 w-20 text-cyan-400" />
+            <RubiksCubeIcon className="h-16 w-16 md:h-20 md:w-20 text-cyan-400" />
           </div>
         </motion.div>
-        <h1 className="text-5xl font-extrabold tracking-tight text-slate-100 sm:text-6xl">
-          探索魔術方塊的<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">極限世界</span>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-100">
+          探索魔術方塊的<br className="md:hidden" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">極限世界</span>
         </h1>
-        <p className="max-w-2xl mx-auto text-xl text-slate-400">
+        <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 px-4">
           從基礎復原到世界級速解，結合 AI 智能分析，帶您全面掌握魔術方塊的各項技術與歷史。
         </p>
+        
+        <div className="pt-4">
+          <a 
+            href="https://www.worldcubeassociation.org/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-cyan-500/50 text-slate-200 rounded-full font-medium transition-all shadow-lg hover:shadow-cyan-500/20"
+          >
+            <GlobeIcon className="w-5 h-5 mr-2 text-cyan-400" />
+            前往 WCA 官方網站
+            <ExternalLink className="w-4 h-4 ml-2 opacity-70" />
+          </a>
+        </div>
       </section>
 
       {/* Features Section */}
-      <section className="grid md:grid-cols-3 gap-8">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <FeatureCard
           icon={Cuboid}
           title="WCA 全項目解析"
@@ -47,6 +61,16 @@ export default function HomePage() {
   );
 }
 
+function GlobeIcon(props: any) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 function FeatureCard({ icon: Icon, title, description }: { icon: any; title: string; description: string }) {
   return (
     <motion.div
@@ -57,7 +81,7 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any; title: str
         <Icon className="h-6 w-6 text-cyan-400" />
       </div>
       <h3 className="text-xl font-bold text-slate-100 mb-2">{title}</h3>
-      <p className="text-slate-400 leading-relaxed">{description}</p>
+      <p className="text-slate-400 leading-relaxed text-sm md:text-base">{description}</p>
     </motion.div>
   );
 }
