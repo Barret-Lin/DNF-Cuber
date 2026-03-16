@@ -10,7 +10,6 @@ import BasicTutorialsPage from './pages/BasicTutorialsPage';
 import SpeedSolvingPage from './pages/SpeedSolvingPage';
 import WorldRecordsPage from './pages/WorldRecordsPage';
 import AISolverPage from './pages/AISolverPage';
-import CalendarPage from './pages/CalendarPage';
 import WCASchedulePage from './pages/WCASchedulePage';
 import DNFCuberPage from './pages/DNFCuberPage';
 
@@ -22,7 +21,6 @@ const pages = [
   { id: 'basic', name: '基礎教學', icon: BookOpen, component: BasicTutorialsPage },
   { id: 'speed', name: '速解進階', icon: Zap, component: SpeedSolvingPage },
   { id: 'records', name: '世界紀錄', icon: Trophy, component: WorldRecordsPage },
-  { id: 'calendar', name: '魔方行事曆', icon: CalendarDays, component: CalendarPage },
   { id: 'wca-schedule', name: 'WCA 賽程', icon: MapPin, component: WCASchedulePage },
   { id: 'ai', name: 'AI 最佳解法', icon: BrainCircuit, component: AISolverPage },
 ];
