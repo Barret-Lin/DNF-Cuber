@@ -1,10 +1,22 @@
 import { motion } from 'motion/react';
-import { Cuboid, Trophy, BrainCircuit, ExternalLink } from 'lucide-react';
-import { RubiksCubeIcon } from '../components/RubiksCubeIcon';
+import { Trophy, BrainCircuit, ExternalLink } from 'lucide-react';
+import { ColoredCubeIcon } from '../components/ColoredCubeIcon';
 
 export default function HomePage() {
   return (
-    <div className="space-y-12 md:space-y-16">
+    <div className="space-y-12 md:space-y-16 relative">
+      {/* Floating Image */}
+      <div className="fixed right-4 bottom-8 md:right-8 md:bottom-12 z-40 pointer-events-none select-none hidden sm:block">
+        <img 
+          src="https://duk.tw/meh8N9.png" 
+          alt="Floating Decoration" 
+          className="w-24 md:w-32 lg:w-40 opacity-90 drop-shadow-2xl"
+          draggable="false"
+          onContextMenu={(e) => e.preventDefault()}
+          referrerPolicy="no-referrer"
+        />
+      </div>
+
       {/* Hero Section */}
       <section className="text-center space-y-6 py-8 md:py-12 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 bg-cyan-500/20 rounded-full blur-[80px] md:blur-[100px] -z-10"></div>
@@ -15,7 +27,7 @@ export default function HomePage() {
           className="flex justify-center"
         >
           <div className="p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-            <RubiksCubeIcon className="h-16 w-16 md:h-20 md:w-20 text-cyan-400" />
+            <ColoredCubeIcon className="h-16 w-16 md:h-20 md:w-20" />
           </div>
         </motion.div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-100">
@@ -42,7 +54,7 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
         <FeatureCard
-          icon={Cuboid}
+          icon={ColoredCubeIcon}
           title="WCA 全項目解析"
           description="涵蓋所有世界魔方協會 (WCA) 正式比賽項目，從二階到七階，以及魔表、金字塔等異形魔方。"
         />
@@ -78,7 +90,7 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any; title: str
       className="bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-slate-800 hover:border-cyan-500/30 transition-colors"
     >
       <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center mb-4">
-        <Icon className="h-6 w-6 text-cyan-400" />
+        <Icon className="h-6 w-6" />
       </div>
       <h3 className="text-xl font-bold text-slate-100 mb-2">{title}</h3>
       <p className="text-slate-400 leading-relaxed text-sm md:text-base">{description}</p>

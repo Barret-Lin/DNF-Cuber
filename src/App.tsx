@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, History, Cuboid, BookOpen, Zap, Trophy, BrainCircuit, CalendarDays } from 'lucide-react';
-import { RubiksCubeIcon } from './components/RubiksCubeIcon';
+import { Menu, X, Home, History, BookOpen, Zap, Trophy, BrainCircuit, CalendarDays } from 'lucide-react';
+import { ColoredCubeIcon } from './components/ColoredCubeIcon';
 
 import HomePage from './pages/HomePage';
 import HistoryPage from './pages/HistoryPage';
@@ -15,7 +15,7 @@ import CalendarPage from './pages/CalendarPage';
 const pages = [
   { id: 'home', name: '首頁', icon: Home, component: HomePage },
   { id: 'history', name: '歷史沿革', icon: History, component: HistoryPage },
-  { id: 'wca', name: 'WCA 項目', icon: Cuboid, component: WCAPuzzlesPage },
+  { id: 'wca', name: 'WCA 項目', icon: ColoredCubeIcon, component: WCAPuzzlesPage },
   { id: 'basic', name: '基礎教學', icon: BookOpen, component: BasicTutorialsPage },
   { id: 'speed', name: '速解進階', icon: Zap, component: SpeedSolvingPage },
   { id: 'records', name: '世界紀錄', icon: Trophy, component: WorldRecordsPage },
@@ -68,14 +68,14 @@ export default function App() {
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/20 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px]"></div>
           
-          <motion.div animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[5%] text-cyan-500/20 w-24 h-24 md:w-32 md:h-32">
-            <RubiksCubeIcon className="w-full h-full" />
+          <motion.div animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[15%] left-[5%] opacity-20 w-24 h-24 md:w-32 md:h-32">
+            <ColoredCubeIcon className="w-full h-full" />
           </motion.div>
-          <motion.div animate={{ y: [0, 30, 0], rotate: [0, -10, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[10%] text-blue-500/10 w-32 h-32 md:w-48 md:h-48">
-            <RubiksCubeIcon className="w-full h-full" />
+          <motion.div animate={{ y: [0, 30, 0], rotate: [0, -10, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[10%] opacity-10 w-32 h-32 md:w-48 md:h-48">
+            <ColoredCubeIcon className="w-full h-full" />
           </motion.div>
-          <motion.div animate={{ y: [0, -25, 0], rotate: [0, 8, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[25%] right-[8%] text-indigo-500/20 w-28 h-28 md:w-40 md:h-40">
-            <RubiksCubeIcon className="w-full h-full" />
+          <motion.div animate={{ y: [0, -25, 0], rotate: [0, 8, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[25%] right-[8%] opacity-20 w-28 h-28 md:w-40 md:h-40">
+            <ColoredCubeIcon className="w-full h-full" />
           </motion.div>
         </div>
 
@@ -86,7 +86,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between h-16">
                 <div className="flex items-center cursor-pointer" onClick={() => setCurrentPage('home')}>
-                  <RubiksCubeIcon className="h-6 w-6 md:h-8 md:w-8 text-cyan-400 mr-2" />
+                  <ColoredCubeIcon className="h-6 w-6 md:h-8 md:w-8 mr-2" />
                   <span className="font-bold text-lg md:text-xl tracking-tight text-slate-100 truncate">DNF Cuber</span>
                 </div>
                 

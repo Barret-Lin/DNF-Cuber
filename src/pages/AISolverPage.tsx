@@ -61,7 +61,13 @@ export default function AISolverPage() {
     "如何突破 3x3 CFOP 15秒的瓶頸？",
     "請分析 Roux Method 在單手解法上的優勢。",
     "4x4 Yau Method 的邊塊組裝有什麼創新技巧？",
-    "給初學者的盲解記憶法建議。"
+    "給初學者的盲解記憶法建議。",
+    "如何優化 F2L 的觀察與預判 (Look-ahead)？",
+    "Square-1 復原形狀 (Cube Shape) 的最佳學習路徑？",
+    "五魔方 (Megaminx) S2L 階段如何減少找塊時間？",
+    "3x3 最少步數 (FMC) 中 Domino Reduction 的核心概念是什麼？",
+    "魔錶 (Clock) 7-Simul 技巧的原理與練習方法？",
+    "金字塔 (Pyraminx) L4E 最佳化公式有哪些？"
   ];
 
   return (
