@@ -2,20 +2,35 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { CalendarDays, MapPin, ExternalLink, ArrowUpDown } from 'lucide-react';
 import { ColoredCubeIcon } from '../components/ColoredCubeIcon';
+import { TaiwanMap } from '../components/TaiwanMap';
 
 const wcaCompetitions = [
-  { id: 1, name: 'Taiwan Championship 2026', date: '2026-08-14 ~ 08-16', location: '台北市, 中華台北', events: '全項目 (17項)', link: 'https://www.worldcubeassociation.org/competitions/TaiwanChampionship2026' },
-  { id: 2, name: 'Taichung Cube Open 2026', date: '2026-04-18 ~ 04-19', location: '台中市, 中華台北', events: '3x3, 2x2, 4x4, 3x3OH, Pyraminx', link: 'https://www.worldcubeassociation.org/competitions/TaichungCubeOpen2026' },
-  { id: 3, name: 'Kaohsiung Summer 2026', date: '2026-07-25 ~ 07-26', location: '高雄市, 中華台北', events: '3x3, 5x5, 6x6, 7x7, Megaminx', link: 'https://www.worldcubeassociation.org/competitions/KaohsiungSummer2026' },
-  { id: 4, name: 'Hsinchu Winter 2026', date: '2026-12-12 ~ 12-13', location: '新竹市, 中華台北', events: '3x3, 2x2, 4x4, Pyraminx, Skewb', link: 'https://www.worldcubeassociation.org/competitions/HsinchuWinter2026' },
-  { id: 5, name: 'Tainan Cube Day 2026', date: '2026-02-21 ~ 02-22', location: '台南市, 中華台北', events: '3x3, 3x3OH, 3x3BF, Clock, Sq-1', link: 'https://www.worldcubeassociation.org/competitions/TainanCubeDay2026' },
-  { id: 6, name: 'Chiayi Open 2026', date: '2026-09-05 ~ 09-06', location: '嘉義市, 中華台北', events: '3x3, 2x2, 3x3OH, Pyraminx, Skewb', link: 'https://www.worldcubeassociation.org/competitions/ChiayiOpen2026' },
+  { id: 1, name: "Please Don't DNF Kaohsiung 2026", date: '2026-04-05 ~ 04-06', location: '高雄市, 中華台北', events: '3x3BF, 3x3FM, Clock, 4x4BF, 5x5BF, 3x3MBLD', link: 'https://www.worldcubeassociation.org/competitions/PleaseDontDNFKaohsiung2026', coordinates: [22.627, 120.301] as [number, number] },
+  { id: 2, name: 'Penghu Spring Cube Open 2026', date: '2026-03-14', location: '澎湖縣, 中華台北', events: '3x3, 2x2, 4x4, Pyraminx', link: 'https://www.worldcubeassociation.org/competitions/PenghuSpringCubeOpen2026', coordinates: [23.567, 119.575] as [number, number] },
+  { id: 3, name: 'Shin Kong Cube Open - Taitung 2025', date: '2025-12-28', location: '台東市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongOpenTaitung2025', coordinates: [22.758, 121.144] as [number, number] },
+  { id: 4, name: 'Taiwan Championship 2025', date: '2025-12-19 ~ 12-21', location: '新北市, 中華台北', events: '全項目 (17項)', link: 'https://www.worldcubeassociation.org/competitions/TaiwanChampionship2025', coordinates: [25.016, 121.462] as [number, number] },
+  { id: 5, name: 'Shin Kong Cube Open - Kaohsiung 2025', date: '2025-12-14', location: '高雄市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongCubeOpenKaohsiung2025', coordinates: [22.627, 120.301] as [number, number] },
+  { id: 6, name: 'Taoyuan Airport Cube Day 2025', date: '2025-11-29 ~ 11-30', location: '桃園市, 中華台北', events: '3x3, 2x2, 4x4, 5x5, Pyraminx, Skewb, Sq-1', link: 'https://www.worldcubeassociation.org/competitions/TaoyuanAirportCubeDay2025', coordinates: [24.993, 121.301] as [number, number] },
+  { id: 7, name: 'Shin Kong Cube Open - Taichung 2025', date: '2025-11-22', location: '台中市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongOpenTaichung2025', coordinates: [24.147, 120.673] as [number, number] },
+  { id: 8, name: 'Shin Kong Cube Open - New Taipei 2025', date: '2025-11-09', location: '新北市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongCubeOpenNewTaipei2025', coordinates: [25.016, 121.462] as [number, number] },
+  { id: 9, name: 'Please Be Quiet Taiwan 2025', date: '2025-10-18 ~ 10-19', location: '台北市, 中華台北', events: '3x3BF, 3x3FM, 4x4BF, 5x5BF, 3x3MBLD', link: 'https://www.worldcubeassociation.org/competitions/PleaseBeQuietTaiwan2025', coordinates: [25.032, 121.565] as [number, number] },
 ];
 
 export default function WCASchedulePage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const sortedCompetitions = [...wcaCompetitions].sort((a, b) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const oneYearLater = new Date(now);
+  oneYearLater.setFullYear(now.getFullYear() + 1);
+
+  const sortedCompetitions = wcaCompetitions
+    .filter(comp => {
+      const startDateStr = comp.date.split(' ~ ')[0];
+      const startDate = new Date(startDateStr);
+      return startDate >= now && startDate <= oneYearLater;
+    })
+    .sort((a, b) => {
     const dateA = new Date(a.date.split(' ~ ')[0]).getTime();
     const dateB = new Date(b.date.split(' ~ ')[0]).getTime();
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
@@ -27,8 +42,18 @@ export default function WCASchedulePage() {
       
       <div className="text-center space-y-4 mb-8 md:mb-12">
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 tracking-tight">WCA 賽程</h1>
-        <p className="text-base md:text-lg text-slate-400">追蹤舉辦地點為「中華台北」的 WCA 官方賽事</p>
+        <p className="text-base md:text-lg text-slate-400">
+          追蹤舉辦地點為「中華台北」的 WCA 官方賽事
+          <br />
+          <span className="text-sm text-slate-500">（僅顯示從今日起一年內的賽事）</span>
+        </p>
       </div>
+
+      {sortedCompetitions.length > 0 && (
+        <div className="mb-10">
+          <TaiwanMap events={sortedCompetitions} />
+        </div>
+      )}
 
       <div className="flex justify-end mb-6">
         <button
@@ -41,14 +66,19 @@ export default function WCASchedulePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {sortedCompetitions.map((comp, index) => (
-          <motion.div
-            key={comp.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-slate-900/50 backdrop-blur-sm p-5 md:p-6 rounded-2xl shadow-lg border border-slate-800 hover:border-cyan-500/30 transition-colors flex flex-col h-full"
-          >
+        {sortedCompetitions.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-slate-400">
+            目前一年內沒有即將舉辦的賽事
+          </div>
+        ) : (
+          sortedCompetitions.map((comp, index) => (
+            <motion.div
+              key={comp.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-slate-900/50 backdrop-blur-sm p-5 md:p-6 rounded-2xl shadow-lg border border-slate-800 hover:border-cyan-500/30 transition-colors flex flex-col h-full"
+            >
             <h3 className="text-lg md:text-xl font-bold text-slate-100 mb-4">{comp.name}</h3>
             
             <div className="space-y-3 flex-grow">
@@ -77,7 +107,7 @@ export default function WCASchedulePage() {
               </a>
             </div>
           </motion.div>
-        ))}
+        )))}
       </div>
     </div>
   );
