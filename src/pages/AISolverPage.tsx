@@ -4,8 +4,25 @@ import { BrainCircuit, Send, Loader2, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 
+// Safely get API key for both AI Studio and Vercel/Vite environments
+const getApiKey = () => {
+  try {
+    if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
+      return process.env.GEMINI_API_KEY;
+    }
+  } catch (e) {}
+  
+  try {
+    if (import.meta.env?.VITE_GEMINI_API_KEY) {
+      return import.meta.env.VITE_GEMINI_API_KEY;
+    }
+  } catch (e) {}
+  
+  return '';
+};
+
 // Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: getApiKey() || 'missing-api-key' });
 
 export default function AISolverPage() {
   const [query, setQuery] = useState('');
