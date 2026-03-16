@@ -90,10 +90,28 @@ export default function AISolverPage() {
       setResponse(result.text || '無法生成回應。');
     } catch (err: any) {
       console.error('AI Error:', err);
-      setError('發生錯誤，請檢查您的 API Key 是否正確或稍後再試。' + (err.message || ''));
-      if (err.message?.includes('API key not valid') || err.message?.includes('403')) {
+      const msg = err.message || String(err);
+      
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+        setError('API 請求次數已達上限 (Quota Exceeded)。請輸入您自己的 API Key 或稍後再試。');
         setApiKey('');
         setShowApiKeyInput(true);
+      } else if (msg.includes('API key not valid') || msg.includes('403')) {
+        setError('API Key 無效或無權限，請重新輸入。');
+        setApiKey('');
+        setShowApiKeyInput(true);
+      } else {
+        let cleanMsg = msg;
+        try {
+          const jsonMatch = msg.match(/\{.*\}/s);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed.error && parsed.error.message) {
+              cleanMsg = parsed.error.message;
+            }
+          }
+        } catch (e) {}
+        setError('發生錯誤：' + cleanMsg);
       }
     } finally {
       setIsLoading(false);
