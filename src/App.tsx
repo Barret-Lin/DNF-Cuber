@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, History, BookOpen, Zap, Trophy, BrainCircuit, CalendarDays, MapPin } from 'lucide-react';
+import { Menu, X, Home, History, BookOpen, Zap, Trophy, BrainCircuit, CalendarDays, MapPin, Youtube } from 'lucide-react';
 import { ColoredCubeIcon } from './components/ColoredCubeIcon';
 
 import HomePage from './pages/HomePage';
@@ -12,9 +12,11 @@ import WorldRecordsPage from './pages/WorldRecordsPage';
 import AISolverPage from './pages/AISolverPage';
 import CalendarPage from './pages/CalendarPage';
 import WCASchedulePage from './pages/WCASchedulePage';
+import DNFCuberPage from './pages/DNFCuberPage';
 
 const pages = [
   { id: 'home', name: '首頁', icon: Home, component: HomePage },
+  { id: 'dnf-cuber', name: 'DNF Cuber', icon: Youtube, component: DNFCuberPage },
   { id: 'history', name: '歷史沿革', icon: History, component: HistoryPage },
   { id: 'wca', name: 'WCA 項目', icon: ColoredCubeIcon, component: WCAPuzzlesPage },
   { id: 'basic', name: '基礎教學', icon: BookOpen, component: BasicTutorialsPage },
