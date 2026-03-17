@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { qaDatabase } from '../data/qaDatabase';
@@ -24,10 +24,21 @@ export default function AISolverPage() {
   const [keyVerificationStatus, setKeyVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [keyErrorMessage, setKeyErrorMessage] = useState('');
   const [currentModel, setCurrentModel] = useState('gemini-3.1-pro-preview');
+  const [quotaTier, setQuotaTier] = useState('Free Tier (系統內建)');
   
   const [selectedQA, setSelectedQA] = useState<{question: string, answer: string} | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!apiKey) {
+      setQuotaTier('未設定');
+    } else if (apiKey === defaultApiKey) {
+      setQuotaTier('Free Tier (系統內建)');
+    } else {
+      setQuotaTier('自訂金鑰 (Paid / Free)');
+    }
+  }, [apiKey, defaultApiKey]);
 
   const handleAskAI = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -104,6 +115,9 @@ export default function AISolverPage() {
           
           if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
             lastErrorMsg = msg;
+            if (msg.includes('FreeTier')) {
+              setQuotaTier('Free Tier (額度耗盡)');
+            }
             continue; // Try the next model
           } else {
             throw err; // Throw immediately for 403 or other errors
@@ -299,15 +313,31 @@ export default function AISolverPage() {
             </div>
 
             {/* Model Status & API Key Button */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-              <div className="flex items-center text-sm text-slate-300">
-                <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
-                <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
+            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-800/50 p-3 rounded-lg border border-slate-700 gap-4">
+              <div className="flex flex-col gap-2 text-sm text-slate-300">
+                <div className="flex items-center">
+                  <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
+                  <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
+                  {currentModel !== 'gemini-3.1-pro-preview' && (
+                    <button
+                      type="button"
+                      onClick={() => setCurrentModel('gemini-3.1-pro-preview')}
+                      className="ml-3 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-xs rounded transition-colors flex items-center"
+                      title="重置為預設最高階模型"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" /> 重置
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center">
+                  <Database className="w-4 h-4 text-amber-400 mr-2" />
+                  <span>API Key 狀態：<strong className="text-amber-400">{quotaTier}</strong></span>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowApiKeyInput(true)}
-                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center mt-2 sm:mt-0 bg-slate-800 px-3 py-1.5 rounded-md border border-slate-700 hover:border-cyan-500/50"
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center bg-slate-800 px-3 py-2 rounded-md border border-slate-700 hover:border-cyan-500/50 whitespace-nowrap"
               >
                 <Key className="w-3 h-3 mr-1.5" />
                 升級版本 / 自訂 API Key
