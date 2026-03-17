@@ -32,8 +32,8 @@ export default function HeroBoardPage() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const origin = event.origin;
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+      // 確保訊息來自同一個網域 (支援 Vercel, Localhost, AI Studio 等任何部署環境)
+      if (event.origin !== window.location.origin) {
         return;
       }
       if (event.data?.type === 'WCA_AUTH_SUCCESS' && event.data.token) {
