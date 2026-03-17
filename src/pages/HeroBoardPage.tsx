@@ -56,7 +56,12 @@ export default function HeroBoardPage() {
       setError('');
       const response = await fetch('/api/auth/wca/url');
       if (!response.ok) {
-        throw new Error('無法取得登入網址，請確認後端設定。');
+        let errorMsg = '無法取得登入網址，請確認後端設定。';
+        try {
+          const errData = await response.json();
+          if (errData.error) errorMsg += ` (${errData.error})`;
+        } catch (e) {}
+        throw new Error(errorMsg);
       }
       const { url } = await response.json();
       

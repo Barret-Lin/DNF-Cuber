@@ -8,6 +8,8 @@ dotenv.config();
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  
+  app.set('trust proxy', 1);
 
   // API routes
   app.get("/api/health", (req, res) => {
@@ -17,7 +19,8 @@ async function startServer() {
   // WCA OAuth endpoints
   app.get("/api/auth/wca/url", (req, res) => {
     const clientId = process.env.WCA_CLIENT_ID;
-    const redirectUri = process.env.WCA_REDIRECT_URI || `${req.protocol}://${req.get("host")}/auth/callback`;
+    const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
+    const redirectUri = process.env.WCA_REDIRECT_URI || `${baseUrl}/auth/callback`;
     
     if (!clientId) {
       return res.status(500).json({ error: "WCA_CLIENT_ID is not configured" });
@@ -38,7 +41,8 @@ async function startServer() {
     const { code } = req.query;
     const clientId = process.env.WCA_CLIENT_ID;
     const clientSecret = process.env.WCA_CLIENT_SECRET;
-    const redirectUri = process.env.WCA_REDIRECT_URI || `${req.protocol}://${req.get("host")}/auth/callback`;
+    const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get("host")}`;
+    const redirectUri = process.env.WCA_REDIRECT_URI || `${baseUrl}/auth/callback`;
 
     if (!code) {
       return res.status(400).send("Missing code parameter");
