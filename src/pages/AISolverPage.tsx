@@ -136,11 +136,14 @@ export default function AISolverPage() {
             const msg = err.message || String(err);
             console.warn(`Model ${model} with key ...${keyToTry.slice(-4)} failed:`, msg);
             
-            if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+            const isQuotaError = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
+            const isAuthError = msg.includes('API key not valid') || msg.includes('403') || msg.includes('API_KEY_INVALID');
+
+            if (isQuotaError || (!isCustomKey && isAuthError)) {
               lastErrorMsg = msg;
               continue; // Try next key
             } else {
-              throw err; // Throw immediately for 403 or other errors
+              throw err; // Throw immediately for custom key 403 or other errors
             }
           }
         }
@@ -155,22 +158,24 @@ export default function AISolverPage() {
       console.error('AI Error:', err);
       const msg = err.message || String(err);
       
-      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+      const isQuotaError = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
+      const isAuthError = msg.includes('API key not valid') || msg.includes('403') || msg.includes('API_KEY_INVALID');
+
+      if (isQuotaError || isAuthError) {
         const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
         if (!isCustomKey) {
-          setError('所有內建 API Key 請求次數均已達上限。請輸入您自己的 API Key 或稍後再試。');
-          setKeyErrorMessage('所有內建 API Key 均已耗盡，請輸入新的 API Key。');
+          setError('所有內建 API Key 均已失效或達上限。請輸入您自己的 API Key 或稍後再試。');
+          setKeyErrorMessage('所有內建 API Key 均已耗盡或失效，請輸入新的 API Key。');
         } else {
-          setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
-          setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
+          if (isAuthError) {
+            setError('API Key 無效或無權限，請重新輸入。');
+            setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
+          } else {
+            setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
+            setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
+          }
         }
         setApiKey('');
-        setKeyVerificationStatus('error');
-        setShowApiKeyInput(true);
-      } else if (msg.includes('API key not valid') || msg.includes('403')) {
-        setError('API Key 無效或無權限，請重新輸入。');
-        setApiKey('');
-        setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
         setKeyVerificationStatus('error');
         setShowApiKeyInput(true);
       } else {
@@ -254,11 +259,16 @@ export default function AISolverPage() {
   };
 
   const suggestedQueries = [
-    "如何突破 3x3 CFOP 15秒的瓶頸？",
-    "請分析 Roux Method 在單手解法上的優勢。",
-    "4x4 Yau Method 的邊塊組裝有什麼創新技巧？",
-    "給初學者的盲解記憶法建議。",
-    "如何優化 F2L 的觀察與預判 (Look-ahead)？"
+    "如何有效練習 3x3 的 Cross 盲解？",
+    "高階魔方 (5x5-7x7) 的中心組裝有哪些進階技巧？",
+    "單手解法 (OH) 中，如何克服左手小指無力的問題？",
+    "盲解 (BLD) 記憶時容易把邊塊和角塊搞混怎麼辦？",
+    "如何判斷 OLL 該用哪一種指法最順手？",
+    "魔方保養：潤滑油的種類與正確使用方式？",
+    "比賽時容易緊張手抖，有什麼心理調適的方法？",
+    "如何利用節拍器 (Metronome) 來穩定轉速 (TPS)？",
+    "Square-1 的 EP 階段有哪些必背的公式？",
+    "多步預判 (Multi-slotting) 在實戰中的應用時機？"
   ];
 
   return (
