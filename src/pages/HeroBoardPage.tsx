@@ -54,16 +54,21 @@ export default function HeroBoardPage() {
     try {
       setIsLoading(true);
       setError('');
-      const response = await fetch('/api/auth/wca/url');
-      if (!response.ok) {
-        let errorMsg = '無法取得登入網址，請確認後端設定。';
-        try {
-          const errData = await response.json();
-          if (errData.error) errorMsg += ` (${errData.error})`;
-        } catch (e) {}
-        throw new Error(errorMsg);
+      
+      const clientId = process.env.WCA_CLIENT_ID;
+      if (!clientId) {
+        throw new Error('無法取得 WCA_CLIENT_ID，請確認環境變數設定。如果您是在 Vercel 等平台部署，請確保該平台也設定了此環境變數。');
       }
-      const { url } = await response.json();
+
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: "token",
+        scope: "public",
+      });
+
+      const url = `https://www.worldcubeassociation.org/oauth/authorize?${params}`;
       
       const authWindow = window.open(
         url,
