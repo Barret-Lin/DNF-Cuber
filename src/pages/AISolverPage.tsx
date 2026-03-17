@@ -1,18 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { qaDatabase } from '../data/qaDatabase';
-
-const BUILT_IN_KEYS = [
-  'AIzaSyA0DQpsDGZAPgyPooqYcOC4lKbWBefBO70',
-  'AIzaSyDTF2hcOOXHR2vLGlgmWmQBc9BMe9p3bSY',
-  'AIzaSyAC1pRRkWxoVant1Yn1yyfg5qaX8OQZ5x8',
-  'AIzaSyAgh2fSZsyATHZg5mkikAB5d3ZsNaeibo8',
-  'AIzaSyDNnMnress1mTo4Vk2cLHdIGB7Ja2GQNGI',
-  'AIzaSyBdilcrOcfZCfJb0-eji_RYZfS9xveMuKA'
-];
 
 export default function AISolverPage() {
   const [query, setQuery] = useState('');
@@ -24,7 +15,7 @@ export default function AISolverPage() {
   const [youtubeLink, setYoutubeLink] = useState('');
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   
-  const defaultApiKey = BUILT_IN_KEYS[0];
+  const defaultApiKey = process.env.GEMINI_API_KEY || '';
   
   const [apiKey, setApiKey] = useState(defaultApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
@@ -32,7 +23,7 @@ export default function AISolverPage() {
   const [isVerifyingKey, setIsVerifyingKey] = useState(false);
   const [keyVerificationStatus, setKeyVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [keyErrorMessage, setKeyErrorMessage] = useState('');
-  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash');
+  const [currentModel, setCurrentModel] = useState('gemini-3.1-pro-preview');
   const [quotaTier, setQuotaTier] = useState('Free Tier (系統內建)');
   
   const [selectedQA, setSelectedQA] = useState<{question: string, answer: string} | null>(null);
@@ -42,13 +33,12 @@ export default function AISolverPage() {
   useEffect(() => {
     if (!apiKey) {
       setQuotaTier('未設定');
-    } else if (BUILT_IN_KEYS.includes(apiKey)) {
-      const idx = BUILT_IN_KEYS.indexOf(apiKey) + 1;
-      setQuotaTier(`Free Tier (系統內建 ${idx}/${BUILT_IN_KEYS.length})`);
+    } else if (apiKey === defaultApiKey) {
+      setQuotaTier('Free Tier (系統內建)');
     } else {
       setQuotaTier('自訂金鑰 (Paid / Free)');
     }
-  }, [apiKey]);
+  }, [apiKey, defaultApiKey]);
 
   const handleAskAI = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -99,28 +89,18 @@ export default function AISolverPage() {
         });
       }
 
+      const modelsToTry = ['gemini-3.1-pro-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash'];
       let success = false;
       let lastErrorMsg = '';
 
-      const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
-      let currentKeyIdx = BUILT_IN_KEYS.indexOf(apiKey);
-      if (currentKeyIdx === -1) currentKeyIdx = 0;
-      
-      const keysToTry = isCustomKey 
-        ? [apiKey] 
-        : [...BUILT_IN_KEYS.slice(currentKeyIdx), ...BUILT_IN_KEYS.slice(0, currentKeyIdx)];
-
-      for (const keyToTry of keysToTry) {
-        // 更新畫面顯示當前正在嘗試的金鑰
-        setApiKey(keyToTry);
-        // 暫停一小段時間讓 React 有機會重新渲染畫面，讓使用者看到輪播過程
-        await new Promise(resolve => setTimeout(resolve, 100));
-
+      for (const model of modelsToTry) {
+        setCurrentModel(model);
+        
         try {
-          const ai = new GoogleGenAI({ apiKey: keyToTry });
+          const ai = new GoogleGenAI({ apiKey });
           
           const reqOptions: any = {
-            model: currentModel,
+            model: model,
             contents: { parts }
           };
           
@@ -132,27 +112,28 @@ export default function AISolverPage() {
 
           setResponse(result.text || '無法生成回應。');
           success = true;
-          break; // Break key loop
+          break; // Break model loop
         } catch (err: any) {
           const msg = err.message || String(err);
-          console.warn(`Model ${currentModel} with key ...${keyToTry.slice(-4)} failed:`, msg);
+          console.warn(`Model ${model} failed:`, msg);
           
           const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
           const isAuthError = msg.includes('403') || msg.includes('API_KEY_INVALID') || (msg.includes('400') && msg.toLowerCase().includes('api key'));
 
-          if (isCustomKey) {
-            throw err; // Custom key failed, throw immediately
-          } else if (isQuotaError || isAuthError) {
+          if (isQuotaError) {
             lastErrorMsg = msg;
-            continue; // Built-in key failed due to quota/auth, try next
+            if (msg.includes('FreeTier')) {
+              setQuotaTier('Free Tier (額度耗盡)');
+            }
+            continue; // Try next model
           } else {
-            throw err; // Built-in key failed due to other error (e.g. bad request), throw
+            throw err; // Throw immediately for auth or other errors
           }
         }
       }
 
       if (!success) {
-        throw new Error(lastErrorMsg || '所有金鑰均請求失敗，請稍後再試。');
+        throw new Error(lastErrorMsg || '所有模型均請求失敗，請稍後再試。');
       }
 
     } catch (err: any) {
@@ -163,18 +144,12 @@ export default function AISolverPage() {
       const isAuthError = msg.includes('403') || msg.includes('API_KEY_INVALID') || (msg.includes('400') && msg.toLowerCase().includes('api key'));
 
       if (isQuotaError || isAuthError) {
-        const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
-        if (!isCustomKey) {
-          setError(`所有內建 API Key 均已失效或達上限。請輸入您自己的 API Key 或稍後再試。`);
-          setKeyErrorMessage(`所有內建 API Key 均已耗盡或失效 (${msg})，請輸入新的 API Key。`);
+        if (isAuthError) {
+          setError('API Key 無效或無權限，請重新輸入。');
+          setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
         } else {
-          if (isAuthError) {
-            setError('API Key 無效或無權限，請重新輸入。');
-            setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
-          } else {
-            setError('API 請求次數已達上限 (Quota Exceeded)。請輸入付費 API Key 或稍後再試。');
-            setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
-          }
+          setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
+          setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
         }
         setApiKey('');
         setKeyVerificationStatus('error');
@@ -356,16 +331,17 @@ export default function AISolverPage() {
               <div className="flex flex-col gap-2 text-sm text-slate-300">
                 <div className="flex items-center">
                   <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
-                  <span className="mr-2">目前運行模型：</span>
-                  <select
-                    value={currentModel}
-                    onChange={(e) => setCurrentModel(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 text-cyan-400 text-sm font-bold rounded-md px-2 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer"
-                  >
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro</option>
-                    <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
-                  </select>
+                  <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
+                  {currentModel !== 'gemini-3.1-pro-preview' && (
+                    <button
+                      type="button"
+                      onClick={() => setCurrentModel('gemini-3.1-pro-preview')}
+                      className="ml-3 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-xs rounded transition-colors flex items-center"
+                      title="重置為預設最高階模型"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" /> 重置
+                    </button>
+                  )}
                 </div>
                 <div className="flex items-center">
                   <Database className="w-4 h-4 text-amber-400 mr-2" />
