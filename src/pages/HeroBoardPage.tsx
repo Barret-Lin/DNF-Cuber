@@ -273,7 +273,8 @@ export default function HeroBoardPage() {
 
             <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
               <h4 className="font-bold text-slate-300 mb-2">步驟 2：設定環境變數 (Secrets)</h4>
-              <p className="mb-2">在 AI Studio 的介面中，找到 <strong>Settings</strong> (設定) 選單，進入 <strong>Secrets</strong> 區塊，新增以下三個環境變數：</p>
+              <p className="mb-2 text-amber-400 font-medium">⚠️ 請注意：環境變數必須設定在 AI Studio 介面中，而不是 Vercel 或其他平台。</p>
+              <p className="mb-2">請在 AI Studio 畫面右側或上方的 <strong>Settings (設定 ⚙️)</strong> 選單中，找到 <strong>Secrets</strong> 區塊，新增以下三個環境變數：</p>
               <ul className="list-disc list-inside space-y-2 ml-2">
                 <li><code className="text-cyan-400 bg-cyan-400/10 px-1 py-0.5 rounded">WCA_CLIENT_ID</code>：填入您剛剛獲得的 Application ID。</li>
                 <li><code className="text-cyan-400 bg-cyan-400/10 px-1 py-0.5 rounded">WCA_CLIENT_SECRET</code>：填入您剛剛獲得的 Secret。</li>
