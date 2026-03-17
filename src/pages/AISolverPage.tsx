@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { qaDatabase } from '../data/qaDatabase';
@@ -99,7 +99,6 @@ export default function AISolverPage() {
         });
       }
 
-      const modelsToTry = ['gemini-2.5-flash', 'gemini-3.1-pro-preview', 'gemini-3-flash-preview'];
       let success = false;
       let lastErrorMsg = '';
 
@@ -111,55 +110,52 @@ export default function AISolverPage() {
         ? [apiKey] 
         : [...BUILT_IN_KEYS.slice(currentKeyIdx), ...BUILT_IN_KEYS.slice(0, currentKeyIdx)];
 
-      for (const model of modelsToTry) {
-        setCurrentModel(model);
-        
-        for (const keyToTry of keysToTry) {
-          try {
-            const ai = new GoogleGenAI({ apiKey: keyToTry });
-            
-            const result = await ai.models.generateContent({
-              model: model,
-              contents: { parts },
-              config: {
-                tools: youtubeLink ? [{ googleSearch: {} }] : undefined
-              }
-            });
-
-            setResponse(result.text || '無法生成回應。');
-            if (apiKey !== keyToTry) {
-              setApiKey(keyToTry); // Update active key if we rotated
+      for (const keyToTry of keysToTry) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: keyToTry });
+          
+          const result = await ai.models.generateContent({
+            model: currentModel,
+            contents: { parts },
+            config: {
+              tools: youtubeLink ? [{ googleSearch: {} }] : undefined
             }
-            success = true;
-            break; // Break key loop
-          } catch (err: any) {
-            const msg = err.message || String(err);
-            console.warn(`Model ${model} with key ...${keyToTry.slice(-4)} failed:`, msg);
-            
-            const isQuotaError = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
-            const isAuthError = msg.includes('API key not valid') || msg.includes('403') || msg.includes('API_KEY_INVALID');
+          });
 
-            if (isQuotaError || (!isCustomKey && isAuthError)) {
-              lastErrorMsg = msg;
-              continue; // Try next key
-            } else {
-              throw err; // Throw immediately for custom key 403 or other errors
-            }
+          setResponse(result.text || '無法生成回應。');
+          if (apiKey !== keyToTry) {
+            setApiKey(keyToTry); // Update active key if we rotated
+          }
+          success = true;
+          break; // Break key loop
+        } catch (err: any) {
+          const msg = err.message || String(err);
+          console.warn(`Model ${currentModel} with key ...${keyToTry.slice(-4)} failed:`, msg);
+          
+          const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
+          const isAuthError = msg.toLowerCase().includes('key') || msg.includes('403') || msg.includes('400');
+
+          if (isCustomKey) {
+            throw err; // Custom key failed, throw immediately
+          } else if (isQuotaError || isAuthError) {
+            lastErrorMsg = msg;
+            continue; // Built-in key failed due to quota/auth, try next
+          } else {
+            throw err; // Built-in key failed due to other error (e.g. bad request), throw
           }
         }
-        if (success) break; // Break model loop
       }
 
       if (!success) {
-        throw new Error(lastErrorMsg || '所有模型與金鑰均請求失敗，請稍後再試。');
+        throw new Error(lastErrorMsg || '所有金鑰均請求失敗，請稍後再試。');
       }
 
     } catch (err: any) {
       console.error('AI Error:', err);
       const msg = err.message || String(err);
       
-      const isQuotaError = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
-      const isAuthError = msg.includes('API key not valid') || msg.includes('403') || msg.includes('API_KEY_INVALID');
+      const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
+      const isAuthError = msg.toLowerCase().includes('key') || msg.includes('403') || msg.includes('400');
 
       if (isQuotaError || isAuthError) {
         const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
@@ -171,7 +167,7 @@ export default function AISolverPage() {
             setError('API Key 無效或無權限，請重新輸入。');
             setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
           } else {
-            setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
+            setError('API 請求次數已達上限 (Quota Exceeded)。請輸入付費 API Key 或稍後再試。');
             setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
           }
         }
@@ -355,17 +351,16 @@ export default function AISolverPage() {
               <div className="flex flex-col gap-2 text-sm text-slate-300">
                 <div className="flex items-center">
                   <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
-                  <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
-                  {currentModel !== 'gemini-2.5-flash' && (
-                    <button
-                      type="button"
-                      onClick={() => setCurrentModel('gemini-2.5-flash')}
-                      className="ml-3 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-xs rounded transition-colors flex items-center"
-                      title="重置為預設模型"
-                    >
-                      <RefreshCw className="w-3 h-3 mr-1" /> 重置
-                    </button>
-                  )}
+                  <span className="mr-2">目前運行模型：</span>
+                  <select
+                    value={currentModel}
+                    onChange={(e) => setCurrentModel(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 text-cyan-400 text-sm font-bold rounded-md px-2 py-1 focus:outline-none focus:border-cyan-500 cursor-pointer"
+                  >
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro</option>
+                    <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <Database className="w-4 h-4 text-amber-400 mr-2" />
@@ -385,9 +380,6 @@ export default function AISolverPage() {
                 升級版本 / 自訂 API Key
               </button>
             </div>
-            <p className="text-xs text-slate-500 text-center mt-2">
-              系統會自動偵測 API 額度並降級運行。如需強制使用最高階模型，請點擊上方按鈕輸入您的付費帳號 API Key。
-            </p>
 
             {/* Attachments Preview */}
             {(videoFile || showYoutubeInput || youtubeLink) && (
