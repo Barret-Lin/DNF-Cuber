@@ -31,7 +31,7 @@ export default function HomePage() {
           </div>
         </motion.div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-100">
-          DNF Cuber的<br className="md:hidden" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">極限世界</span>
+          DNF Cuber  <br className="md:hidden" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">極限世界</span>
         </h1>
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-slate-400 px-4">
           從基礎復原到世界級速解，結合 AI 智能分析，帶您全面掌握魔術方塊的各項技術與歷史。
