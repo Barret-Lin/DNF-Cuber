@@ -240,6 +240,54 @@ export default function HeroBoardPage() {
         )}
       </div>
 
+      {!user && !isLoading && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 mt-8">
+          <h3 className="text-lg font-bold text-slate-200 mb-4 flex items-center">
+            <AlertCircle className="w-5 h-5 text-cyan-400 mr-2" />
+            開發者設定指南：如何啟用 WCA 登入
+          </h3>
+          <div className="space-y-4 text-slate-400 text-sm">
+            <p>為了讓登入功能正式運作，您需要完成以下設定：</p>
+            
+            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+              <h4 className="font-bold text-slate-300 mb-2">步驟 1：在 WCA 註冊應用程式</h4>
+              <ol className="list-decimal list-inside space-y-2 ml-2">
+                <li>前往 <a href="https://www.worldcubeassociation.org/oauth/applications" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline">WCA OAuth Applications</a> 頁面並登入。</li>
+                <li>點擊 <strong>"New Application"</strong>。</li>
+                <li>填寫 <strong>Name</strong> (例如：DNF Cuber)。</li>
+                <li>在 <strong>Redirect URIs</strong> 欄位填入以下兩個網址（每行一個）：
+                  <div className="bg-slate-900 p-2 rounded mt-2 font-mono text-xs text-slate-300 break-all">
+                    https://ais-dev-vvdlw2m3sqjintdpr4s3yz-214057543552.asia-northeast1.run.app/auth/callback<br/>
+                    https://ais-pre-vvdlw2m3sqjintdpr4s3yz-214057543552.asia-northeast1.run.app/auth/callback
+                  </div>
+                </li>
+                <li>點擊 <strong>"Submit"</strong> 建立應用程式。</li>
+                <li>建立後，您會獲得 <strong>Client ID</strong> (Application ID) 與 <strong>Client Secret</strong> (Secret)。</li>
+              </ol>
+            </div>
+
+            <div className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+              <h4 className="font-bold text-slate-300 mb-2">步驟 2：設定環境變數 (Secrets)</h4>
+              <p className="mb-2">在 AI Studio 的介面中，找到 <strong>Settings</strong> (設定) 選單，進入 <strong>Secrets</strong> 區塊，新增以下三個環境變數：</p>
+              <ul className="list-disc list-inside space-y-2 ml-2">
+                <li><code className="text-cyan-400 bg-cyan-400/10 px-1 py-0.5 rounded">WCA_CLIENT_ID</code>：填入您剛剛獲得的 Application ID。</li>
+                <li><code className="text-cyan-400 bg-cyan-400/10 px-1 py-0.5 rounded">WCA_CLIENT_SECRET</code>：填入您剛剛獲得的 Secret。</li>
+                <li><code className="text-cyan-400 bg-cyan-400/10 px-1 py-0.5 rounded">WCA_REDIRECT_URI</code>：填入以下網址：
+                  <div className="bg-slate-900 p-2 rounded mt-2 font-mono text-xs text-slate-300 break-all">
+                    https://ais-dev-vvdlw2m3sqjintdpr4s3yz-214057543552.asia-northeast1.run.app/auth/callback
+                  </div>
+                  <span className="text-xs text-slate-500 mt-1 block">註：如果您要分享應用程式 (Shared App)，請將此變數改為 Shared App URL 的 callback 路徑。</span>
+                </li>
+              </ul>
+            </div>
+            
+            <p className="text-amber-400/80 text-xs mt-4">
+              * 設定完成後，您可能需要重新啟動伺服器或重新整理頁面，環境變數才會生效。
+            </p>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="bg-red-900/20 border border-red-500/50 text-red-400 p-4 rounded-xl flex items-start">
           <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
