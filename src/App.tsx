@@ -12,6 +12,7 @@ import WorldRecordsPage from './pages/WorldRecordsPage';
 import AISolverPage from './pages/AISolverPage';
 import WCASchedulePage from './pages/WCASchedulePage';
 import DNFCuberPage from './pages/DNFCuberPage';
+import HeroBoardPage from './pages/HeroBoardPage';
 
 const pages = [
   { id: 'home', name: '首頁', icon: Home, component: HomePage },
@@ -22,6 +23,7 @@ const pages = [
   { id: 'speed', name: '速解進階', icon: Zap, component: SpeedSolvingPage },
   { id: 'records', name: '世界紀錄', icon: Trophy, component: WorldRecordsPage },
   { id: 'wca-schedule', name: 'WCA 賽程', icon: MapPin, component: WCASchedulePage },
+  { id: 'hero-board', name: '英雄板', icon: Trophy, component: HeroBoardPage },
   { id: 'ai', name: 'AI 最佳解法', icon: BrainCircuit, component: AISolverPage },
 ];
 
