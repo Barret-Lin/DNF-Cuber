@@ -5,6 +5,15 @@ import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
 import { qaDatabase } from '../data/qaDatabase';
 
+const BUILT_IN_KEYS = [
+  'AIzaSyA0DQpsDGZAPgyPooqYcOC4lKbWBefBO70',
+  'AIzaSyDTF2hcOOXHR2vLGlgmWmQBc9BMe9p3bSY',
+  'AIzaSyAC1pRRkWxoVant1Yn1yyfg5qaX8OQZ5x8',
+  'AIzaSyAgh2fSZsyATHZg5mkikAB5d3ZsNaeibo8',
+  'AIzaSyDNnMnress1mTo4Vk2cLHdIGB7Ja2GQNGI',
+  'AIzaSyBdilcrOcfZCfJb0-eji_RYZfS9xveMuKA'
+];
+
 export default function AISolverPage() {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
@@ -15,7 +24,7 @@ export default function AISolverPage() {
   const [youtubeLink, setYoutubeLink] = useState('');
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   
-  const defaultApiKey = process.env.GEMINI_API_KEY || 'AIzaSyDNnMnress1mTo4Vk2cLHdIGB7Ja2GQNGI';
+  const defaultApiKey = BUILT_IN_KEYS[0];
   
   const [apiKey, setApiKey] = useState(defaultApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
@@ -33,12 +42,13 @@ export default function AISolverPage() {
   useEffect(() => {
     if (!apiKey) {
       setQuotaTier('未設定');
-    } else if (apiKey === defaultApiKey) {
-      setQuotaTier('Free Tier (系統內建)');
+    } else if (BUILT_IN_KEYS.includes(apiKey)) {
+      const idx = BUILT_IN_KEYS.indexOf(apiKey) + 1;
+      setQuotaTier(`Free Tier (系統內建 ${idx}/${BUILT_IN_KEYS.length})`);
     } else {
       setQuotaTier('自訂金鑰 (Paid / Free)');
     }
-  }, [apiKey, defaultApiKey]);
+  }, [apiKey]);
 
   const handleAskAI = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -93,40 +103,52 @@ export default function AISolverPage() {
       let success = false;
       let lastErrorMsg = '';
 
-      for (const model of modelsToTry) {
-        try {
-          setCurrentModel(model);
-          const ai = new GoogleGenAI({ apiKey });
-          
-          const result = await ai.models.generateContent({
-            model: model,
-            contents: { parts },
-            config: {
-              tools: youtubeLink ? [{ googleSearch: {} }] : undefined
-            }
-          });
+      const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
+      let currentKeyIdx = BUILT_IN_KEYS.indexOf(apiKey);
+      if (currentKeyIdx === -1) currentKeyIdx = 0;
+      
+      const keysToTry = isCustomKey 
+        ? [apiKey] 
+        : [...BUILT_IN_KEYS.slice(currentKeyIdx), ...BUILT_IN_KEYS.slice(0, currentKeyIdx)];
 
-          setResponse(result.text || '無法生成回應。');
-          success = true;
-          break; // Success, exit the fallback loop
-        } catch (err: any) {
-          const msg = err.message || String(err);
-          console.warn(`Model ${model} failed:`, msg);
-          
-          if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-            lastErrorMsg = msg;
-            if (msg.includes('FreeTier')) {
-              setQuotaTier('Free Tier (額度耗盡)');
+      for (const model of modelsToTry) {
+        setCurrentModel(model);
+        
+        for (const keyToTry of keysToTry) {
+          try {
+            const ai = new GoogleGenAI({ apiKey: keyToTry });
+            
+            const result = await ai.models.generateContent({
+              model: model,
+              contents: { parts },
+              config: {
+                tools: youtubeLink ? [{ googleSearch: {} }] : undefined
+              }
+            });
+
+            setResponse(result.text || '無法生成回應。');
+            if (apiKey !== keyToTry) {
+              setApiKey(keyToTry); // Update active key if we rotated
             }
-            continue; // Try the next model
-          } else {
-            throw err; // Throw immediately for 403 or other errors
+            success = true;
+            break; // Break key loop
+          } catch (err: any) {
+            const msg = err.message || String(err);
+            console.warn(`Model ${model} with key ...${keyToTry.slice(-4)} failed:`, msg);
+            
+            if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+              lastErrorMsg = msg;
+              continue; // Try next key
+            } else {
+              throw err; // Throw immediately for 403 or other errors
+            }
           }
         }
+        if (success) break; // Break model loop
       }
 
       if (!success) {
-        throw new Error(lastErrorMsg || '所有模型均請求失敗，請稍後再試。');
+        throw new Error(lastErrorMsg || '所有模型與金鑰均請求失敗，請稍後再試。');
       }
 
     } catch (err: any) {
@@ -134,9 +156,15 @@ export default function AISolverPage() {
       const msg = err.message || String(err);
       
       if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-        setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
+        const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
+        if (!isCustomKey) {
+          setError('所有內建 API Key 請求次數均已達上限。請輸入您自己的 API Key 或稍後再試。');
+          setKeyErrorMessage('所有內建 API Key 均已耗盡，請輸入新的 API Key。');
+        } else {
+          setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
+          setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
+        }
         setApiKey('');
-        setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
         setKeyVerificationStatus('error');
         setShowApiKeyInput(true);
       } else if (msg.includes('API key not valid') || msg.includes('403')) {
@@ -332,6 +360,10 @@ export default function AISolverPage() {
                 <div className="flex items-center">
                   <Database className="w-4 h-4 text-amber-400 mr-2" />
                   <span>API Key 狀態：<strong className="text-amber-400">{quotaTier}</strong></span>
+                </div>
+                <div className="flex items-center">
+                  <Key className="w-4 h-4 text-emerald-400 mr-2" />
+                  <span>當前使用金鑰：<strong className="text-emerald-400 font-mono">{apiKey ? `${apiKey.slice(0, 12)}...${apiKey.slice(-4)}` : '無'}</strong></span>
                 </div>
               </div>
               <button
