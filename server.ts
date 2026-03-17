@@ -23,7 +23,9 @@ async function startServer() {
     const redirectUri = process.env.WCA_REDIRECT_URI || `${baseUrl}/auth/callback`;
     
     if (!clientId) {
-      return res.status(500).json({ error: "WCA_CLIENT_ID is not configured" });
+      return res.status(500).json({ 
+        error: "伺服器找不到 WCA_CLIENT_ID。如果您是在『已分享的網頁 (Shared App)』中測試，請在設定完 Secrets 後，重新點擊右上角的 Share 部署一次應用程式，環境變數才會生效。" 
+      });
     }
 
     const params = new URLSearchParams({
