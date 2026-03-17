@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key } from 'lucide-react';
+import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import Markdown from 'react-markdown';
+import { qaDatabase } from '../data/qaDatabase';
 
 export default function AISolverPage() {
   const [query, setQuery] = useState('');
@@ -14,25 +15,25 @@ export default function AISolverPage() {
   const [youtubeLink, setYoutubeLink] = useState('');
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   
-  const [apiKey, setApiKey] = useState('');
+  const defaultApiKey = process.env.GEMINI_API_KEY || 'AIzaSyDNnMnress1mTo4Vk2cLHdIGB7Ja2GQNGI';
+  
+  const [apiKey, setApiKey] = useState(defaultApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
+  const [isVerifyingKey, setIsVerifyingKey] = useState(false);
+  const [keyVerificationStatus, setKeyVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [keyErrorMessage, setKeyErrorMessage] = useState('');
+  const [currentModel, setCurrentModel] = useState('gemini-3.1-pro-preview');
   
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedQA, setSelectedQA] = useState<{question: string, answer: string} | null>(null);
 
-  // Clear API key on unmount (離開網頁後清除內存)
-  useEffect(() => {
-    return () => {
-      setApiKey('');
-      setTempApiKey('');
-    };
-  }, []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAskAI = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!query.trim() && !videoFile && !youtubeLink) return;
 
-    if (!apiKey && !process.env.GEMINI_API_KEY) {
+    if (!apiKey) {
       setShowApiKeyInput(true);
       return;
     }
@@ -42,8 +43,6 @@ export default function AISolverPage() {
     setResponse('');
 
     try {
-      const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY });
-      
       const parts: any[] = [];
       
       let promptText = `你是一位世界頂尖的魔術方塊教練與演算法專家。
@@ -79,26 +78,58 @@ export default function AISolverPage() {
         });
       }
 
-      const result = await ai.models.generateContent({
-        model: 'gemini-3.1-pro-preview',
-        contents: { parts },
-        config: {
-          tools: youtubeLink ? [{ googleSearch: {} }] : undefined
-        }
-      });
+      const modelsToTry = ['gemini-3.1-pro-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash'];
+      let success = false;
+      let lastErrorMsg = '';
 
-      setResponse(result.text || '無法生成回應。');
+      for (const model of modelsToTry) {
+        try {
+          setCurrentModel(model);
+          const ai = new GoogleGenAI({ apiKey });
+          
+          const result = await ai.models.generateContent({
+            model: model,
+            contents: { parts },
+            config: {
+              tools: youtubeLink ? [{ googleSearch: {} }] : undefined
+            }
+          });
+
+          setResponse(result.text || '無法生成回應。');
+          success = true;
+          break; // Success, exit the fallback loop
+        } catch (err: any) {
+          const msg = err.message || String(err);
+          console.warn(`Model ${model} failed:`, msg);
+          
+          if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+            lastErrorMsg = msg;
+            continue; // Try the next model
+          } else {
+            throw err; // Throw immediately for 403 or other errors
+          }
+        }
+      }
+
+      if (!success) {
+        throw new Error(lastErrorMsg || '所有模型均請求失敗，請稍後再試。');
+      }
+
     } catch (err: any) {
       console.error('AI Error:', err);
       const msg = err.message || String(err);
       
       if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
-        setError('API 請求次數已達上限 (Quota Exceeded)。請輸入您自己的 API Key 或稍後再試。');
+        setError('API 請求次數已達上限 (Quota Exceeded)。已嘗試降級模型但仍失敗，請輸入付費 API Key 或稍後再試。');
         setApiKey('');
+        setKeyErrorMessage('目前的 API Key 請求次數已達上限，請輸入新的 API Key。');
+        setKeyVerificationStatus('error');
         setShowApiKeyInput(true);
       } else if (msg.includes('API key not valid') || msg.includes('403')) {
         setError('API Key 無效或無權限，請重新輸入。');
         setApiKey('');
+        setKeyErrorMessage('目前的 API Key 無效或無權限，請重新輸入。');
+        setKeyVerificationStatus('error');
         setShowApiKeyInput(true);
       } else {
         let cleanMsg = msg;
@@ -118,15 +149,51 @@ export default function AISolverPage() {
     }
   };
 
-  const handleApiKeySubmit = (e: React.FormEvent) => {
+  const verifyApiKey = async (keyToTest: string) => {
+    if (!keyToTest.trim()) return false;
+    setIsVerifyingKey(true);
+    setKeyVerificationStatus('idle');
+    setKeyErrorMessage('');
+    
+    try {
+      const ai = new GoogleGenAI({ apiKey: keyToTest });
+      // Make a lightweight call to test the key
+      await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: 'hi',
+      });
+      setKeyVerificationStatus('success');
+      return true;
+    } catch (err: any) {
+      console.error('API Key Verification Error:', err);
+      setKeyVerificationStatus('error');
+      const msg = err.message || String(err);
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+        setKeyErrorMessage('API Key 請求次數已達上限 (Quota Exceeded)。');
+      } else if (msg.includes('API key not valid') || msg.includes('403')) {
+        setKeyErrorMessage('API Key 無效或無權限。');
+      } else {
+        setKeyErrorMessage('驗證失敗：' + msg);
+      }
+      return false;
+    } finally {
+      setIsVerifyingKey(false);
+    }
+  };
+
+  const handleApiKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (tempApiKey.trim()) {
-      setApiKey(tempApiKey.trim());
-      setShowApiKeyInput(false);
-      if (query.trim() || videoFile || youtubeLink) {
-        setTimeout(() => {
-          handleAskAI();
-        }, 100);
+      const isValid = await verifyApiKey(tempApiKey.trim());
+      if (isValid) {
+        setApiKey(tempApiKey.trim());
+        setShowApiKeyInput(false);
+        setKeyVerificationStatus('idle');
+        if (query.trim() || videoFile || youtubeLink) {
+          setTimeout(() => {
+            handleAskAI();
+          }, 100);
+        }
       }
     }
   };
@@ -231,6 +298,25 @@ export default function AISolverPage() {
               </button>
             </div>
 
+            {/* Model Status & API Key Button */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+              <div className="flex items-center text-sm text-slate-300">
+                <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
+                <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowApiKeyInput(true)}
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center mt-2 sm:mt-0 bg-slate-800 px-3 py-1.5 rounded-md border border-slate-700 hover:border-cyan-500/50"
+              >
+                <Key className="w-3 h-3 mr-1.5" />
+                升級版本 / 自訂 API Key
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 text-center mt-2">
+              系統會自動偵測 API 額度並降級運行。如需強制使用最高階模型，請點擊上方按鈕輸入您的付費帳號 API Key。
+            </p>
+
             {/* Attachments Preview */}
             {(videoFile || showYoutubeInput || youtubeLink) && (
               <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 flex flex-col gap-3">
@@ -322,6 +408,82 @@ export default function AISolverPage() {
         </div>
       </div>
 
+      {/* QA Database Section */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center">
+          <Database className="w-6 h-6 mr-3 text-cyan-400" />
+          AI 智能解法範本資料庫
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {qaDatabase.map((qa, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedQA(qa)}
+              className="text-left p-5 bg-slate-900/50 border border-slate-800 rounded-xl hover:bg-slate-800 hover:border-cyan-500/50 transition-all group shadow-sm hover:shadow-cyan-500/10"
+            >
+              <div className="flex items-start">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm font-bold mr-4 mt-0.5 border border-cyan-500/20 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40 transition-colors">
+                  {index + 1}
+                </span>
+                <span className="text-slate-300 group-hover:text-cyan-300 transition-colors font-medium leading-relaxed">
+                  {qa.question}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* QA Modal */}
+      <AnimatePresence>
+        {selectedQA && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-start gap-4 bg-slate-950/50">
+                <h3 className="text-xl font-bold text-cyan-400 leading-snug flex items-start">
+                  <Sparkles className="w-6 h-6 mr-3 flex-shrink-0 mt-0.5" />
+                  {selectedQA.question}
+                </h3>
+                <button 
+                  onClick={() => setSelectedQA(null)}
+                  className="text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0 bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto custom-scrollbar bg-slate-900/50">
+                <div className="prose prose-invert prose-cyan max-w-none markdown-body text-slate-300 leading-relaxed">
+                  <Markdown>{selectedQA.answer}</Markdown>
+                </div>
+              </div>
+              <div className="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+                <button
+                  onClick={() => {
+                    setQuery(selectedQA.question);
+                    setSelectedQA(null);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg transition-colors text-sm font-medium border border-slate-700 hover:border-cyan-500/50 flex items-center"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  將此問題帶入輸入框
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* API Key Modal */}
       <AnimatePresence>
         {showApiKeyInput && (
@@ -360,26 +522,57 @@ export default function AISolverPage() {
                     <input
                       type="password"
                       value={tempApiKey}
-                      onChange={(e) => setTempApiKey(e.target.value)}
+                      onChange={(e) => {
+                        setTempApiKey(e.target.value);
+                        setKeyVerificationStatus('idle');
+                        setKeyErrorMessage('');
+                      }}
                       placeholder="AIzaSy..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all font-mono text-sm"
+                      className={`w-full px-4 py-3 rounded-xl bg-slate-950 border ${keyVerificationStatus === 'error' ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : keyVerificationStatus === 'success' ? 'border-emerald-500 focus:ring-emerald-500/50 focus:border-emerald-500' : 'border-slate-700 focus:ring-cyan-500/50 focus:border-cyan-500'} text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 transition-all font-mono text-sm`}
                       autoFocus
                     />
                   </div>
+                  
+                  <AnimatePresence>
+                    {keyVerificationStatus === 'error' && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-red-400 text-sm flex items-center overflow-hidden">
+                        <AlertCircle className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                        {keyErrorMessage || 'API Key 驗證失敗，請檢查後重新輸入。'}
+                      </motion.div>
+                    )}
+                    {keyVerificationStatus === 'success' && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-emerald-400 text-sm flex items-center overflow-hidden">
+                        <CheckCircle2 className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                        API Key 驗證成功！
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="flex justify-end space-x-3 pt-2">
                     <button
                       type="button"
                       onClick={() => setShowApiKeyInput(false)}
                       className="px-4 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors text-sm font-medium"
+                      disabled={isVerifyingKey}
                     >
                       取消
                     </button>
                     <button
-                      type="submit"
-                      disabled={!tempApiKey.trim()}
-                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-lg shadow-cyan-500/20"
+                      type="button"
+                      onClick={() => verifyApiKey(tempApiKey.trim())}
+                      disabled={!tempApiKey.trim() || isVerifyingKey}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium border border-slate-700 flex items-center"
                     >
-                      驗證並發送問題
+                      {isVerifyingKey ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
+                      驗證 Key
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!tempApiKey.trim() || isVerifyingKey}
+                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-lg shadow-cyan-500/20 flex items-center"
+                    >
+                      {isVerifyingKey ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
+                      確認並發送
                     </button>
                   </div>
                 </form>
