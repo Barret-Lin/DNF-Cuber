@@ -32,7 +32,7 @@ export default function AISolverPage() {
   const [isVerifyingKey, setIsVerifyingKey] = useState(false);
   const [keyVerificationStatus, setKeyVerificationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [keyErrorMessage, setKeyErrorMessage] = useState('');
-  const [currentModel, setCurrentModel] = useState('gemini-3.1-pro-preview');
+  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash');
   const [quotaTier, setQuotaTier] = useState('Free Tier (系統內建)');
   
   const [selectedQA, setSelectedQA] = useState<{question: string, answer: string} | null>(null);
@@ -99,7 +99,7 @@ export default function AISolverPage() {
         });
       }
 
-      const modelsToTry = ['gemini-3.1-pro-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash'];
+      const modelsToTry = ['gemini-2.5-flash', 'gemini-3.1-pro-preview', 'gemini-3-flash-preview'];
       let success = false;
       let lastErrorMsg = '';
 
@@ -356,12 +356,12 @@ export default function AISolverPage() {
                 <div className="flex items-center">
                   <Sparkles className="w-4 h-4 text-cyan-400 mr-2" />
                   <span>目前運行模型：<strong className="text-cyan-400">{currentModel}</strong></span>
-                  {currentModel !== 'gemini-3.1-pro-preview' && (
+                  {currentModel !== 'gemini-2.5-flash' && (
                     <button
                       type="button"
-                      onClick={() => setCurrentModel('gemini-3.1-pro-preview')}
+                      onClick={() => setCurrentModel('gemini-2.5-flash')}
                       className="ml-3 px-2 py-1 bg-slate-700 hover:bg-slate-600 text-xs rounded transition-colors flex items-center"
-                      title="重置為預設最高階模型"
+                      title="重置為預設模型"
                     >
                       <RefreshCw className="w-3 h-3 mr-1" /> 重置
                     </button>
