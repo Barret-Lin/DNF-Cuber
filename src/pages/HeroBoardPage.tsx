@@ -28,7 +28,7 @@ export default function HeroBoardPage() {
   const [personalBests, setPersonalBests] = useState<PersonalBest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(() => sessionStorage.getItem('wca_access_token'));
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -37,6 +37,7 @@ export default function HeroBoardPage() {
         return;
       }
       if (event.data?.type === 'WCA_AUTH_SUCCESS' && event.data.token) {
+        sessionStorage.setItem('wca_access_token', event.data.token);
         setAccessToken(event.data.token);
       }
     };
@@ -89,6 +90,7 @@ export default function HeroBoardPage() {
   const [medals, setMedals] = useState<{gold: number, silver: number, bronze: number} | null>(null);
 
   const handleLogout = () => {
+    sessionStorage.removeItem('wca_access_token');
     setAccessToken(null);
     setUser(null);
     setPersonalBests([]);
@@ -168,6 +170,7 @@ export default function HeroBoardPage() {
       }
     } catch (err: any) {
       setError(err.message || '取得資料時發生錯誤');
+      sessionStorage.removeItem('wca_access_token');
       setAccessToken(null); // Reset token on error
     } finally {
       setIsLoading(false);
