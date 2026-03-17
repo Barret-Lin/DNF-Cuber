@@ -111,21 +111,26 @@ export default function AISolverPage() {
         : [...BUILT_IN_KEYS.slice(currentKeyIdx), ...BUILT_IN_KEYS.slice(0, currentKeyIdx)];
 
       for (const keyToTry of keysToTry) {
+        // 更新畫面顯示當前正在嘗試的金鑰
+        setApiKey(keyToTry);
+        // 暫停一小段時間讓 React 有機會重新渲染畫面，讓使用者看到輪播過程
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         try {
           const ai = new GoogleGenAI({ apiKey: keyToTry });
           
-          const result = await ai.models.generateContent({
+          const reqOptions: any = {
             model: currentModel,
-            contents: { parts },
-            config: {
-              tools: youtubeLink ? [{ googleSearch: {} }] : undefined
-            }
-          });
+            contents: { parts }
+          };
+          
+          if (youtubeLink) {
+            reqOptions.config = { tools: [{ googleSearch: {} }] };
+          }
+          
+          const result = await ai.models.generateContent(reqOptions);
 
           setResponse(result.text || '無法生成回應。');
-          if (apiKey !== keyToTry) {
-            setApiKey(keyToTry); // Update active key if we rotated
-          }
           success = true;
           break; // Break key loop
         } catch (err: any) {
@@ -133,7 +138,7 @@ export default function AISolverPage() {
           console.warn(`Model ${currentModel} with key ...${keyToTry.slice(-4)} failed:`, msg);
           
           const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
-          const isAuthError = msg.toLowerCase().includes('key') || msg.includes('403') || msg.includes('400');
+          const isAuthError = msg.includes('403') || msg.includes('API_KEY_INVALID') || (msg.includes('400') && msg.toLowerCase().includes('api key'));
 
           if (isCustomKey) {
             throw err; // Custom key failed, throw immediately
@@ -155,13 +160,13 @@ export default function AISolverPage() {
       const msg = err.message || String(err);
       
       const isQuotaError = msg.includes('429') || msg.toLowerCase().includes('quota') || msg.includes('RESOURCE_EXHAUSTED');
-      const isAuthError = msg.toLowerCase().includes('key') || msg.includes('403') || msg.includes('400');
+      const isAuthError = msg.includes('403') || msg.includes('API_KEY_INVALID') || (msg.includes('400') && msg.toLowerCase().includes('api key'));
 
       if (isQuotaError || isAuthError) {
         const isCustomKey = !BUILT_IN_KEYS.includes(apiKey);
         if (!isCustomKey) {
-          setError('所有內建 API Key 均已失效或達上限。請輸入您自己的 API Key 或稍後再試。');
-          setKeyErrorMessage('所有內建 API Key 均已耗盡或失效，請輸入新的 API Key。');
+          setError(`所有內建 API Key 均已失效或達上限。請輸入您自己的 API Key 或稍後再試。`);
+          setKeyErrorMessage(`所有內建 API Key 均已耗盡或失效 (${msg})，請輸入新的 API Key。`);
         } else {
           if (isAuthError) {
             setError('API Key 無效或無權限，請重新輸入。');
@@ -185,7 +190,7 @@ export default function AISolverPage() {
             }
           }
         } catch (e) {}
-        setError('發生錯誤：' + cleanMsg);
+        setError(`發生錯誤：${cleanMsg}`);
       }
     } finally {
       setIsLoading(false);
