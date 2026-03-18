@@ -7,17 +7,18 @@ interface Video {
   type: 'video' | 'short';
   title: string;
   start?: number;
+  date: string;
 }
 
 const defaultVideos: Video[] = [
-  { id: 'mF6F3Gzw_Q8', type: 'video', title: '賽程轉播', start: 65 },
-  { id: '2eGlXar9B_o', type: 'short', title: 'Shorts 1' },
-  { id: 'eGsepfDXkQo', type: 'short', title: 'Shorts 2' },
-  { id: 'yEAgn3xYYeM', type: 'short', title: 'Shorts 3' },
-  { id: '1tsjydjjolo', type: 'short', title: 'Shorts 4' },
-  { id: 'HGj4ntqNJdQ', type: 'short', title: 'Shorts 5' },
-  { id: 'orC81ipd0ts', type: 'short', title: 'Shorts 6' },
-  { id: '125LuEnnIok', type: 'short', title: 'Shorts 7' },
+  { id: 'mF6F3Gzw_Q8', type: 'video', title: '賽程轉播', start: 65, date: '2024-01-01T00:00:00.000Z' },
+  { id: '2eGlXar9B_o', type: 'short', title: 'Shorts 1', date: '2024-01-02T00:00:00.000Z' },
+  { id: 'eGsepfDXkQo', type: 'short', title: 'Shorts 2', date: '2024-01-03T00:00:00.000Z' },
+  { id: 'yEAgn3xYYeM', type: 'short', title: 'Shorts 3', date: '2024-01-04T00:00:00.000Z' },
+  { id: '1tsjydjjolo', type: 'short', title: 'Shorts 4', date: '2024-01-05T00:00:00.000Z' },
+  { id: 'HGj4ntqNJdQ', type: 'short', title: 'Shorts 5', date: '2024-01-06T00:00:00.000Z' },
+  { id: 'orC81ipd0ts', type: 'short', title: 'Shorts 6', date: '2024-01-07T00:00:00.000Z' },
+  { id: '125LuEnnIok', type: 'short', title: 'Shorts 7', date: '2024-01-08T00:00:00.000Z' },
 ];
 
 export default function DNFCuberPage() {
@@ -32,6 +33,7 @@ export default function DNFCuberPage() {
   
   const [newVideoUrl, setNewVideoUrl] = useState('');
   const [newVideoTitle, setNewVideoTitle] = useState('');
+  const [newVideoDate, setNewVideoDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     localStorage.setItem('dnf_videos', JSON.stringify(videos));
@@ -88,10 +90,11 @@ export default function DNFCuberPage() {
       id,
       type,
       title: newVideoTitle || (type === 'short' ? 'New Short' : 'New Video'),
+      date: new Date(newVideoDate).toISOString(),
       ...(start && { start })
     };
 
-    setVideos([newVideo, ...videos]);
+    setVideos(prev => [...prev, newVideo].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     setNewVideoUrl('');
     setNewVideoTitle('');
   };
@@ -189,6 +192,13 @@ export default function DNFCuberPage() {
               onChange={(e) => setNewVideoTitle(e.target.value)}
               className="w-full md:w-48 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-red-500/50"
             />
+            <input
+              type="date"
+              value={newVideoDate}
+              onChange={(e) => setNewVideoDate(e.target.value)}
+              className="w-full md:w-40 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-red-500/50"
+              required
+            />
             <button 
               type="submit"
               className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-6 py-2 font-medium transition-colors whitespace-nowrap"
@@ -201,7 +211,7 @@ export default function DNFCuberPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {/* Main Video */}
-        {videos.filter(v => v.type === 'video').map((video, index) => (
+        {[...videos].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).filter(v => v.type === 'video').map((video, index) => (
           <motion.div
             key={video.id}
             initial={{ opacity: 0, y: 20 }}
@@ -231,7 +241,7 @@ export default function DNFCuberPage() {
         ))}
 
         {/* Shorts */}
-        {videos.filter(v => v.type === 'short').map((video, index) => (
+        {[...videos].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).filter(v => v.type === 'short').map((video, index) => (
           <motion.div
             key={video.id}
             initial={{ opacity: 0, y: 20 }}

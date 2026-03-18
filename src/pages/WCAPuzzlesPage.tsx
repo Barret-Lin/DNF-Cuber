@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, ArrowLeft, PlayCircle, Globe, Clock as ClockIcon, ChevronDown, ExternalLink } from 'lucide-react';
+import { Trophy, ArrowLeft, PlayCircle, Globe, Clock as ClockIcon, ChevronDown, ExternalLink, RefreshCw } from 'lucide-react';
 
 const puzzles = [
   { id: '333', name: '3x3x3 Cube', category: 'NxNxN', desc: '最經典的魔術方塊，所有速解的基礎。' },
@@ -16,37 +16,148 @@ const puzzles = [
   { id: '333fm', name: '3x3x3 Fewest Moves', category: '特殊', desc: '在 1 小時內找出步數最少的解法。' },
   { id: '333oh', name: '3x3x3 One-Handed', category: '特殊', desc: '僅使用單手復原 3x3 魔方。' },
   { id: 'clock', name: 'Clock (魔錶)', category: '其他', desc: '雙面都有時鐘指針的益智玩具，非旋轉類。' },
-  { id: 'megaminx', name: 'Megaminx (五魔方)', category: '異形', desc: '十二個面的魔方，解法類似 3x3 的延伸。' },
-  { id: 'pyraminx', name: 'Pyraminx (金字塔)', category: '異形', desc: '四面體結構，解法相對簡單直觀。' },
+  { id: 'minx', name: 'Megaminx (五魔方)', category: '異形', desc: '十二個面的魔方，解法類似 3x3 的延伸。' },
+  { id: 'pyram', name: 'Pyraminx (金字塔)', category: '異形', desc: '四面體結構，解法相對簡單直觀。' },
   { id: 'sq1', name: 'Square-1 (SQ1)', category: '異形', desc: '形狀會改變的魔方，需要先將其復原成正方體。' },
   { id: 'skewb', name: 'Skewb (斜轉)', category: '異形', desc: '沿著對角線旋轉的魔方，手感獨特。' },
 ];
 
-const puzzleRecords: Record<string, any[]> = {
-  '333': [{ type: '單次 (Single)', time: '3.13 秒', holder: 'Max Park', country: '美國', date: '2023-06-11', competition: 'Pride in Long Beach 2023', videoId: 'gh8HX4itF_w' }],
-  '222': [{ type: '單次 (Single)', time: '0.43 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2023-11-05', competition: 'Warsaw Cube Masters 2023', videoId: 'T6dmPZQczTA' }],
-  '444': [{ type: '單次 (Single)', time: '15.71 秒', holder: 'Max Park', country: '美國', date: '2024-06-08', competition: 'Colorado Spring 2024', videoId: 'Q7jjOiM6D5A' }],
-  '555': [{ type: '單次 (Single)', time: '32.52 秒', holder: 'Max Park', country: '美國', date: '2024-03-16', competition: 'DFW Cubing Spring 2024', videoId: '6Hi5t60ZfeI' }],
-  '666': [{ type: '單次 (Single)', time: '58.03 秒', holder: 'Max Park', country: '美國', date: '2024-08-03', competition: 'CubingUSA Nationals 2024', videoId: 'XfOqYgZ-hUw' }],
-  '777': [{ type: '單次 (Single)', time: '1:34.15', holder: 'Max Park', country: '美國', date: '2024-07-13', competition: 'Rubik\'s WCA North American Championship 2024', videoId: 'vokgLYLDfOk' }],
-  '333bf': [{ type: '單次 (Single)', time: '12.00 秒', holder: 'Tommy Cherry', country: '美國', date: '2024-02-11', competition: 'Triton Tricubealon 2024', videoId: 'TPylQiSbW98' }],
-  '333fm': [{ type: '單次 (Single)', time: '16 步', holder: 'Sebastiano Tronto', country: '義大利', date: '2024-06-15', competition: 'FMC 2024', videoId: 'I0yjjwxonEE' }],
-  '333oh': [{ type: '單次 (Single)', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '美國', date: '2024-08-03', competition: 'CubingUSA Nationals 2024', videoId: '88_TpF7WKVo' }],
-  'clock': [{ type: '單次 (Single)', time: '1.97 秒', holder: 'Brendyn Cortina', country: '美國', date: '2024-08-01', competition: 'CubingUSA Nationals 2024', videoId: 'xtwYy3hgDew' }],
-  'megaminx': [{ type: '單次 (Single)', time: '23.18 秒', holder: 'Leandro Martín López', country: '阿根廷', date: '2024-04-13', competition: 'Di Tella Open 2024', videoId: 'BspXtcUcQeo' }],
-  'pyraminx': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Winter 2023', videoId: 'lO262UFJGew' }],
-  'sq1': [{ type: '單次 (Single)', time: '3.41 秒', holder: 'Ryan Pilat', country: '美國', date: '2024-03-02', competition: 'Wichita Family ArtVenture 2024', videoId: '4uH1-Wad35A' }],
-  'skewb': [{ type: '單次 (Single)', time: '0.75 秒', holder: 'Carter Kucala', country: '美國', date: '2024-03-23', competition: 'Going Fast in Grandview 2024', videoId: '3TqzLSkMg_U' }],
-  '444bf': [{ type: '單次 (Single)', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4x4x4 Blindfolded 2023', videoId: 'Us0x_zcNSfU' }],
-  '555bf': [{ type: '單次 (Single)', time: '2:21.62', holder: 'Stanley Chapel', country: '美國', date: '2019-12-15', competition: 'Michigan Cubing Club Epsilon 2019', videoId: 'apFafRSFXlo' }],
-  '333mbf': [{ type: '單次 (Single)', time: '62/65 57:47', holder: 'Graham Siggins', country: '美國', date: '2022-06-26', competition: 'Blind Drive Spring 2022', videoId: 'DKBg78f9DFs' }],
+const initialPuzzleRecords: Record<string, any[]> = {
+  '333': [{ type: '單次 (Single)', time: '2.76 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2026-02-08', competition: 'GLS Big Cubes Gdańsk 2026', videoId: 'gh8HX4itF_w', rawTime: 276 }],
+  '222': [{ type: '單次 (Single)', time: '0.39 秒', holder: 'Ziyu Ye', country: '中國', date: '2025-10-25', competition: 'Hefei Open 2025', videoId: 'T6dmPZQczTA', rawTime: 39 }],
+  '444': [{ type: '單次 (Single)', time: '15.18 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2025-12-08', competition: 'Spanish Championship 2025', videoId: 'Q7jjOiM6D5A', rawTime: 1518 }],
+  '555': [{ type: '單次 (Single)', time: '30.45 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2024-11-04', competition: 'Rubik\'s WCA Asian Championship 2024', videoId: '6Hi5t60ZfeI', rawTime: 3045 }],
+  '666': [{ type: '單次 (Single)', time: '57.69 秒', holder: 'Max Park', country: '美國', date: '2025-04-26', competition: 'Burbank Big Cubes 2025', videoId: 'XfOqYgZ-hUw', rawTime: 5769 }],
+  '777': [{ type: '單次 (Single)', time: '1:33.48', holder: 'Max Park', country: '美國', date: '2025-10-04', competition: 'Nub Open Trabuco Hills Fall 2025', videoId: 'vokgLYLDfOk', rawTime: 9348 }],
+  '333bf': [{ type: '單次 (Single)', time: '11.67 秒', holder: 'Charlie Eggins', country: '澳洲', date: '2026-01-11', competition: 'Cubing at The Cube 2026', videoId: 'TPylQiSbW98', rawTime: 1167 }],
+  '333fm': [{ type: '單次 (Single)', time: '16 步', holder: 'Sebastiano Tronto 等', country: '多國', date: '2019-2024', competition: '多場賽事', videoId: 'I0yjjwxonEE', rawTime: 16 }],
+  '333oh': [{ type: '單次 (Single)', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '瑞士', date: '2024-10-06', competition: 'Swiss Nationals 2024', videoId: '88_TpF7WKVo', rawTime: 566 }],
+  'clock': [{ type: '單次 (Single)', time: '1.53 秒', holder: 'Lachlan Gibson', country: '紐西蘭', date: '2025-09-27', competition: 'Hasty Hastings 2025', videoId: 'xtwYy3hgDew', rawTime: 153 }],
+  'minx': [{ type: '單次 (Single)', time: '21.99 秒', holder: 'Timofei Tarasenko', country: '俄羅斯', date: '2025-12-07', competition: 'Tashkent Open 2025', videoId: 'BspXtcUcQeo', rawTime: 2199 }],
+  'pyram': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Thursday 2023', videoId: 'lO262UFJGew', rawTime: 73 }],
+  'sq1': [{ type: '單次 (Single)', time: '3.40 秒', holder: 'Hassan Khanani', country: '美國', date: '2026-01-24', competition: 'Steel City Sprint PA 2026', videoId: '4uH1-Wad35A', rawTime: 340 }],
+  'skewb': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Vojtěch Grohmann', country: '捷克', date: '2026-03-08', competition: 'Głuszyca Open 2026', videoId: '3TqzLSkMg_U', rawTime: 73 }],
+  '444bf': [{ type: '單次 (Single)', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4BLD in a Madison Hall 2023', videoId: 'Us0x_zcNSfU', rawTime: 5196 }],
+  '555bf': [{ type: '單次 (Single)', time: '1:58.59', holder: 'Stanley Chapel', country: '美國', date: '2026-01-04', competition: 'Multi Mayhem VA 2026', videoId: 'apFafRSFXlo', rawTime: 11859 }],
+  '333mbf': [{ type: '單次 (Single)', time: '63/65 58:23', holder: 'Graham Siggins', country: '美國', date: '2025-10-18', competition: 'Please Be Quiet Reno 2025', videoId: 'DKBg78f9DFs', rawTime: 380350302 }],
 };
 
 const categories = ['全部', 'NxNxN', '盲解', '特殊', '異形', '其他'];
 
+function formatWcaTime(eventId: string, time: number): string {
+  if (eventId === '333fm') {
+    return `${time} 步`;
+  }
+  if (eventId === '333mbf') {
+    const str = String(time).padStart(9, '0');
+    const dd = parseInt(str.substring(0, 2), 10);
+    const ttttt = parseInt(str.substring(2, 7), 10);
+    const mm = parseInt(str.substring(7, 9), 10);
+    
+    const difference = 99 - dd;
+    const solved = difference + mm;
+    const attempted = solved + mm;
+    
+    const hours = Math.floor(ttttt / 3600);
+    const minutes = Math.floor((ttttt % 3600) / 60);
+    const seconds = ttttt % 60;
+    
+    let timeStr = '';
+    if (hours > 0) {
+      timeStr += `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      timeStr += `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    return `${solved}/${attempted} ${timeStr}`;
+  }
+  
+  const seconds = time / 100;
+  if (seconds >= 60) {
+    const mins = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(2).padStart(5, '0');
+    return `${mins}:${secs}`;
+  }
+  return `${seconds.toFixed(2)} 秒`;
+}
+
 export default function WCAPuzzlesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('全部');
+  const [puzzleRecords, setPuzzleRecords] = useState(initialPuzzleRecords);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchLatestRecords = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch('https://www.worldcubeassociation.org/api/v0/records');
+      if (!response.ok) throw new Error('Failed to fetch records');
+      const data = await response.json();
+      const worldRecords = data.world_records;
+
+      setPuzzleRecords(prevRecords => {
+        const newRecords = { ...prevRecords };
+        Object.keys(newRecords).forEach(eventId => {
+          const apiRecord = worldRecords[eventId];
+          if (apiRecord && apiRecord.single) {
+            const recordList = newRecords[eventId];
+            if (recordList.length > 0 && recordList[0].rawTime !== apiRecord.single) {
+              // Record has been broken!
+              newRecords[eventId] = [{
+                ...recordList[0],
+                time: formatWcaTime(eventId, apiRecord.single),
+                rawTime: apiRecord.single,
+                holder: '新紀錄保持人 (請見 WCA 官網)',
+                country: '未知',
+                date: '最新紀錄',
+                competition: '最新賽事',
+                videoId: '' // Clear video ID as it's outdated
+              }];
+            }
+          }
+        });
+        return newRecords;
+      });
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Error fetching latest records:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    // Try to load cached records from sessionStorage
+    const cachedRecords = sessionStorage.getItem('wca_puzzle_records');
+    const cachedTime = sessionStorage.getItem('wca_puzzle_records_time');
+    
+    if (cachedRecords && cachedTime) {
+      setPuzzleRecords(JSON.parse(cachedRecords));
+      setLastUpdated(new Date(cachedTime));
+      // Fetch in background to ensure data is up-to-date
+      fetchLatestRecords();
+    } else {
+      fetchLatestRecords();
+    }
+
+    // Auto-refresh data every 1 minute to ensure immediate synchronization
+    const intervalId = setInterval(() => {
+      fetchLatestRecords();
+    }, 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    // Save to sessionStorage whenever records update
+    if (puzzleRecords !== initialPuzzleRecords) {
+      sessionStorage.setItem('wca_puzzle_records', JSON.stringify(puzzleRecords));
+      if (lastUpdated) {
+        sessionStorage.setItem('wca_puzzle_records_time', lastUpdated.toISOString());
+      }
+    }
+  }, [puzzleRecords, lastUpdated]);
 
   const filteredPuzzles = useMemo(() => {
     if (activeCategory === '全部') return puzzles;
@@ -61,9 +172,25 @@ export default function WCAPuzzlesPage() {
       <AnimatePresence mode="wait">
         {!selectedId ? (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-10">
+            <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-10 relative">
               <h1 className="text-3xl md:text-4xl font-extrabold text-slate-100 tracking-tight">WCA 認證比賽項目 (17項)</h1>
               <p className="text-base md:text-lg text-slate-400">世界魔方協會 (WCA) 認可的 17 項官方賽事</p>
+              
+              <div className="absolute top-0 right-0 flex flex-col items-end">
+                <button
+                  onClick={fetchLatestRecords}
+                  disabled={isRefreshing}
+                  className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-cyan-400' : ''}`} />
+                  <span className="hidden sm:inline">手動更新</span>
+                </button>
+                {lastUpdated && (
+                  <span className="text-xs text-slate-500 mt-2 hidden sm:block">
+                    最後更新: {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Category Filter Dropdown for Mobile, Buttons for Desktop */}
@@ -170,14 +297,33 @@ export default function WCAPuzzlesPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-slate-950/50 px-5 md:px-6 py-3 md:py-4 border-t border-slate-800">
+                  <div className="bg-slate-950/50 px-5 md:px-6 py-3 md:py-4 border-t border-slate-800 flex items-center justify-between">
+                    {record.videoId ? (
+                      <a 
+                        href={`https://www.youtube.com/watch?v=${record.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"
+                      >
+                        <PlayCircle className="w-4 h-4 mr-2" /> 觀看賽事影片 <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+                      </a>
+                    ) : (
+                      <a 
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`WCA World Record ${record.event} ${record.time}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"
+                      >
+                        <PlayCircle className="w-4 h-4 mr-2" /> 搜尋賽事影片 <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+                      </a>
+                    )}
                     <a 
-                      href={`https://www.youtube.com/watch?v=${record.videoId}`}
+                      href={`https://www.worldcubeassociation.org/results/records?event=${selectedId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"
+                      className="text-slate-400 hover:text-slate-300 font-medium text-xs flex items-center transition-colors"
                     >
-                      <PlayCircle className="w-4 h-4 mr-2" /> 觀看賽事影片 <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+                      <Globe className="w-3 h-3 mr-1" /> WCA 官網 <ExternalLink className="w-3 h-3 ml-1 opacity-70" />
                     </a>
                   </div>
                 </div>
