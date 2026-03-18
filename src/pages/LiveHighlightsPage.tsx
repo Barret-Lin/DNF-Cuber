@@ -111,14 +111,124 @@ export default function LiveHighlightsPage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        addItem(event.target.result as string, isVideo ? 'video' : 'image');
+    if (isVideo) {
+      if (file.size <= 1024 * 1024) {
+        // Already under 1MB, just read and save
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            addItem(event.target.result as string, 'video');
+          }
+        };
+        reader.readAsDataURL(file);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+
+      // Compress video if > 1MB
+      setWarningMessage('影片較大，正在進行壓縮處理 (降低解析度與影格率)...');
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          const canvas = document.createElement('canvas');
+          // Limit resolution to 480p max
+          const MAX_WIDTH = 480;
+          let width = video.videoWidth;
+          let height = video.videoHeight;
+          if (width > MAX_WIDTH) {
+            height = Math.floor(height * (MAX_WIDTH / width));
+            width = MAX_WIDTH;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+
+          // Limit framerate to 15fps
+          const stream = canvas.captureStream(15);
+          // Use a low bitrate to ensure small file size
+          const recorder = new MediaRecorder(stream, { 
+            mimeType: 'video/webm;codecs=vp8',
+            videoBitsPerSecond: 250000 
+          });
+          const chunks: Blob[] = [];
+
+          recorder.ondataavailable = e => {
+            if (e.data.size > 0) chunks.push(e.data);
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            if (blob.size > 1024 * 1024) {
+              setWarningMessage('壓縮後影片仍超過 1MB，請上傳更短的影片或改用 YouTube 連結。');
+            } else {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                addItem(reader.result as string, 'video');
+                setWarningMessage('');
+              };
+              reader.readAsDataURL(blob);
+            }
+            URL.revokeObjectURL(video.src);
+          };
+
+          recorder.start();
+
+          const drawFrame = () => {
+            if (video.paused || video.ended) {
+              recorder.stop();
+              return;
+            }
+            ctx?.drawImage(video, 0, 0, width, height);
+            requestAnimationFrame(drawFrame);
+          };
+          drawFrame();
+        }).catch(err => {
+          console.error('Video playback failed for compression:', err);
+          setWarningMessage('影片壓縮失敗，請上傳小於 1MB 的影片。');
+        });
+      };
+      
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          // 限制最大解析度，約等同於 400 dpi 的網頁顯示需求 (最大邊長 1200px)
+          const MAX_DIMENSION = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height && width > MAX_DIMENSION) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          } else if (height > MAX_DIMENSION) {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // 壓縮為 JPEG，品質 0.7
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          addItem(compressedDataUrl, 'image');
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const addItem = (url: string, type: 'image' | 'video' | 'youtube') => {

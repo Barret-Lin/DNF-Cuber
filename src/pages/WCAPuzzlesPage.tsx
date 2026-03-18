@@ -311,7 +311,7 @@ export default function WCAPuzzlesPage() {
                       </a>
                     ) : (
                       <a 
-                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`WCA World Record ${record.event} ${record.time}`)}`}
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`WCA World Record ${selectedPuzzle?.name} ${record.time.replace(/[秒步]/g, '').trim()}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"
