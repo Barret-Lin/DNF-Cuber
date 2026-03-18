@@ -125,10 +125,12 @@ export default function WorldRecordsPage() {
   useEffect(() => {
     // Save to sessionStorage whenever records update
     if (records !== initialRecords) {
-      sessionStorage.setItem('wca_world_records', JSON.stringify(records));
-      if (lastUpdated) {
-        sessionStorage.setItem('wca_world_records_time', lastUpdated.toISOString());
-      }
+      try {
+        sessionStorage.setItem('wca_world_records', JSON.stringify(records));
+        if (lastUpdated) {
+          sessionStorage.setItem('wca_world_records_time', lastUpdated.toISOString());
+        }
+      } catch (e) { console.warn('Failed to cache world records', e); }
     }
   }, [records, lastUpdated]);
 

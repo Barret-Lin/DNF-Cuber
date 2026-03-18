@@ -26,7 +26,16 @@ export default function LiveHighlightsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    localStorage.setItem('live_highlights', JSON.stringify(items));
+    try {
+      localStorage.setItem('live_highlights', JSON.stringify(items));
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+        setWarningMessage('儲存空間已滿！無法儲存更多圖片或影片。請刪除一些舊項目。');
+        // Revert to previous state if possible, or just let the user know
+      } else {
+        console.error('Failed to save highlights:', e);
+      }
+    }
   }, [items]);
 
   const handleLogin = (e: React.FormEvent) => {

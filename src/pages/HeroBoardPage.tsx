@@ -65,7 +65,9 @@ export default function HeroBoardPage() {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type === 'WCA_AUTH_SUCCESS' && event.data.token) {
-        sessionStorage.setItem('wca_access_token', event.data.token);
+        try {
+          sessionStorage.setItem('wca_access_token', event.data.token);
+        } catch (e) { console.warn('Failed to cache access token', e); }
         setAccessToken(event.data.token);
       }
     };
@@ -149,7 +151,15 @@ export default function HeroBoardPage() {
       const base64String = event.target?.result as string;
       setCustomAvatar(base64String);
       if (displayedUser?.wca_id) {
-        localStorage.setItem(`custom_avatar_${displayedUser.wca_id}`, base64String);
+        try {
+          localStorage.setItem(`custom_avatar_${displayedUser.wca_id}`, base64String);
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+            alert('儲存空間已滿！無法儲存自訂頭像。');
+          } else {
+            console.error('Failed to save avatar:', e);
+          }
+        }
       }
     };
     reader.readAsDataURL(file);
@@ -192,7 +202,9 @@ export default function HeroBoardPage() {
       }
 
       setDisplayedUser(userData);
-      sessionStorage.setItem('wca_displayed_user', JSON.stringify(userData));
+      try {
+        sessionStorage.setItem('wca_displayed_user', JSON.stringify(userData));
+      } catch (e) { console.warn('Failed to cache user data', e); }
 
       // Parse medals
       let medalsData = { gold: 0, silver: 0, bronze: 0 };
@@ -210,7 +222,9 @@ export default function HeroBoardPage() {
         };
       }
       setMedals(medalsData);
-      sessionStorage.setItem('wca_medals', JSON.stringify(medalsData));
+      try {
+        sessionStorage.setItem('wca_medals', JSON.stringify(medalsData));
+      } catch (e) { console.warn('Failed to cache medals', e); }
 
       // Parse personal records
       const formattedPBs: PersonalBest[] = [];
@@ -240,14 +254,18 @@ export default function HeroBoardPage() {
         });
       }
       setPersonalBests(formattedPBs);
-      sessionStorage.setItem('wca_personal_bests', JSON.stringify(formattedPBs));
+      try {
+        sessionStorage.setItem('wca_personal_bests', JSON.stringify(formattedPBs));
+      } catch (e) { console.warn('Failed to cache personal bests', e); }
 
       // Fetch all results for the map feature
       const resultsRes = await fetch(`https://www.worldcubeassociation.org/api/v0/persons/${targetWcaId}/results`);
       if (resultsRes.ok) {
         const resultsData = await resultsRes.json();
         setAllResults(resultsData);
-        sessionStorage.setItem('wca_all_results', JSON.stringify(resultsData));
+        try {
+          sessionStorage.setItem('wca_all_results', JSON.stringify(resultsData));
+        } catch (e) { console.warn('Failed to cache all results', e); }
       }
 
     } catch (err: any) {

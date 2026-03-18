@@ -36,7 +36,15 @@ export default function DNFCuberPage() {
   const [newVideoDate, setNewVideoDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
-    localStorage.setItem('dnf_videos', JSON.stringify(videos));
+    try {
+      localStorage.setItem('dnf_videos', JSON.stringify(videos));
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+        alert('儲存空間已滿！無法儲存更多影片。請刪除一些舊項目。');
+      } else {
+        console.error('Failed to save videos:', e);
+      }
+    }
   }, [videos]);
 
   const handleLogin = (e: React.FormEvent) => {

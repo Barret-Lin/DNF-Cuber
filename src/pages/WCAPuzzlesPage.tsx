@@ -152,10 +152,12 @@ export default function WCAPuzzlesPage() {
   useEffect(() => {
     // Save to sessionStorage whenever records update
     if (puzzleRecords !== initialPuzzleRecords) {
-      sessionStorage.setItem('wca_puzzle_records', JSON.stringify(puzzleRecords));
-      if (lastUpdated) {
-        sessionStorage.setItem('wca_puzzle_records_time', lastUpdated.toISOString());
-      }
+      try {
+        sessionStorage.setItem('wca_puzzle_records', JSON.stringify(puzzleRecords));
+        if (lastUpdated) {
+          sessionStorage.setItem('wca_puzzle_records_time', lastUpdated.toISOString());
+        }
+      } catch (e) { console.warn('Failed to cache puzzle records', e); }
     }
   }, [puzzleRecords, lastUpdated]);
 
