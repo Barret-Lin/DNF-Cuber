@@ -132,7 +132,6 @@ export default function HeroBoardPage() {
     setAllResults([]);
     setCustomAvatar(null);
     setSelectedRecord(null);
-    setRecordDetails(null);
     // Fetch default user after logout
     fetchData(null);
   };

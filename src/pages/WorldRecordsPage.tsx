@@ -3,23 +3,23 @@ import { motion } from 'motion/react';
 import { Trophy, Globe, Clock, PlayCircle, ChevronDown, ExternalLink, RefreshCw } from 'lucide-react';
 
 const initialRecords = [
-  { id: '333', event: '3x3x3 Cube', category: 'NxNxN', time: '2.76 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2026-02-08', competition: 'GLS Big Cubes Gdańsk 2026', videoId: 'gh8HX4itF_w', rawTime: 276 },
-  { id: '222', event: '2x2x2 Cube', category: 'NxNxN', time: '0.39 秒', holder: 'Ziyu Ye', country: '中國', date: '2025-10-25', competition: 'Hefei Open 2025', videoId: 'T6dmPZQczTA', rawTime: 39 },
-  { id: '444', event: '4x4x4 Cube', category: 'NxNxN', time: '15.18 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2025-12-08', competition: 'Spanish Championship 2025', videoId: 'Q7jjOiM6D5A', rawTime: 1518 },
-  { id: '555', event: '5x5x5 Cube', category: 'NxNxN', time: '30.45 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2024-11-04', competition: 'Rubik\'s WCA Asian Championship 2024', videoId: '6Hi5t60ZfeI', rawTime: 3045 },
-  { id: '666', event: '6x6x6 Cube', category: 'NxNxN', time: '57.69 秒', holder: 'Max Park', country: '美國', date: '2025-04-26', competition: 'Burbank Big Cubes 2025', videoId: 'XfOqYgZ-hUw', rawTime: 5769 },
-  { id: '777', event: '7x7x7 Cube', category: 'NxNxN', time: '1:33.48', holder: 'Max Park', country: '美國', date: '2025-10-04', competition: 'Nub Open Trabuco Hills Fall 2025', videoId: 'vokgLYLDfOk', rawTime: 9348 },
-  { id: '333bf', event: '3x3x3 Blindfolded', category: '盲解', time: '11.67 秒', holder: 'Charlie Eggins', country: '澳洲', date: '2026-01-11', competition: 'Cubing at The Cube 2026', videoId: 'TPylQiSbW98', rawTime: 1167 },
-  { id: '444bf', event: '4x4x4 Blindfolded', category: '盲解', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4BLD in a Madison Hall 2023', videoId: 'Us0x_zcNSfU', rawTime: 5196 },
-  { id: '555bf', event: '5x5x5 Blindfolded', category: '盲解', time: '1:58.59', holder: 'Stanley Chapel', country: '美國', date: '2026-01-04', competition: 'Multi Mayhem VA 2026', videoId: 'apFafRSFXlo', rawTime: 11859 },
-  { id: '333mbf', event: '3x3x3 Multi-Blind', category: '盲解', time: '63/65 58:23', holder: 'Graham Siggins', country: '美國', date: '2025-10-18', competition: 'Please Be Quiet Reno 2025', videoId: 'DKBg78f9DFs', rawTime: 380350302 },
-  { id: '333fm', event: '3x3x3 Fewest Moves', category: '特殊', time: '16 步', holder: 'Sebastiano Tronto 等', country: '多國', date: '2019-2024', competition: '多場賽事', videoId: 'I0yjjwxonEE', rawTime: 16 },
-  { id: '333oh', event: '3x3x3 One-Handed', category: '特殊', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '瑞士', date: '2024-10-06', competition: 'Swiss Nationals 2024', videoId: '88_TpF7WKVo', rawTime: 566 },
-  { id: 'clock', event: 'Clock', category: '其他', time: '1.53 秒', holder: 'Lachlan Gibson', country: '紐西蘭', date: '2025-09-27', competition: 'Hasty Hastings 2025', videoId: 'xtwYy3hgDew', rawTime: 153 },
-  { id: 'minx', event: 'Megaminx', category: '異形', time: '21.99 秒', holder: 'Timofei Tarasenko', country: '俄羅斯', date: '2025-12-07', competition: 'Tashkent Open 2025', videoId: 'BspXtcUcQeo', rawTime: 2199 },
-  { id: 'pyram', event: 'Pyraminx', category: '異形', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Thursday 2023', videoId: 'lO262UFJGew', rawTime: 73 },
-  { id: 'sq1', event: 'Square-1', category: '異形', time: '3.40 秒', holder: 'Hassan Khanani', country: '美國', date: '2026-01-24', competition: 'Steel City Sprint PA 2026', videoId: '4uH1-Wad35A', rawTime: 340 },
-  { id: 'skewb', event: 'Skewb', category: '異形', time: '0.73 秒', holder: 'Vojtěch Grohmann', country: '捷克', date: '2026-03-08', competition: 'Głuszyca Open 2026', videoId: '3TqzLSkMg_U', rawTime: 73 },
+  { id: '333', event: '3x3x3 Cube', category: 'NxNxN', time: '2.76 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2026-02-08', competition: 'GLS Big Cubes Gdańsk 2026', videoId: '', rawTime: 276 },
+  { id: '222', event: '2x2x2 Cube', category: 'NxNxN', time: '0.39 秒', holder: 'Ziyu Ye', country: '中國', date: '2025-10-25', competition: 'Hefei Open 2025', videoId: '', rawTime: 39 },
+  { id: '444', event: '4x4x4 Cube', category: 'NxNxN', time: '15.18 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2025-12-08', competition: 'Spanish Championship 2025', videoId: '', rawTime: 1518 },
+  { id: '555', event: '5x5x5 Cube', category: 'NxNxN', time: '30.45 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2024-11-04', competition: 'Rubik\'s WCA Asian Championship 2024', videoId: '', rawTime: 3045 },
+  { id: '666', event: '6x6x6 Cube', category: 'NxNxN', time: '57.69 秒', holder: 'Max Park', country: '美國', date: '2025-04-26', competition: 'Burbank Big Cubes 2025', videoId: '', rawTime: 5769 },
+  { id: '777', event: '7x7x7 Cube', category: 'NxNxN', time: '1:33.48', holder: 'Max Park', country: '美國', date: '2025-10-04', competition: 'Nub Open Trabuco Hills Fall 2025', videoId: '', rawTime: 9348 },
+  { id: '333bf', event: '3x3x3 Blindfolded', category: '盲解', time: '11.67 秒', holder: 'Charlie Eggins', country: '澳洲', date: '2026-01-11', competition: 'Cubing at The Cube 2026', videoId: '', rawTime: 1167 },
+  { id: '444bf', event: '4x4x4 Blindfolded', category: '盲解', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4BLD in a Madison Hall 2023', videoId: '', rawTime: 5196 },
+  { id: '555bf', event: '5x5x5 Blindfolded', category: '盲解', time: '1:58.59', holder: 'Stanley Chapel', country: '美國', date: '2026-01-04', competition: 'Multi Mayhem VA 2026', videoId: '', rawTime: 11859 },
+  { id: '333mbf', event: '3x3x3 Multi-Blind', category: '盲解', time: '63/65 58:23', holder: 'Graham Siggins', country: '美國', date: '2025-10-18', competition: 'Please Be Quiet Reno 2025', videoId: '', rawTime: 380350302 },
+  { id: '333fm', event: '3x3x3 Fewest Moves', category: '特殊', time: '16 步', holder: 'Sebastiano Tronto 等', country: '多國', date: '2019-2024', competition: '多場賽事', videoId: '', rawTime: 16 },
+  { id: '333oh', event: '3x3x3 One-Handed', category: '特殊', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '瑞士', date: '2024-10-06', competition: 'Swiss Nationals 2024', videoId: '', rawTime: 566 },
+  { id: 'clock', event: 'Clock', category: '其他', time: '1.53 秒', holder: 'Lachlan Gibson', country: '紐西蘭', date: '2025-09-27', competition: 'Hasty Hastings 2025', videoId: '', rawTime: 153 },
+  { id: 'minx', event: 'Megaminx', category: '異形', time: '21.99 秒', holder: 'Timofei Tarasenko', country: '俄羅斯', date: '2025-12-07', competition: 'Tashkent Open 2025', videoId: '', rawTime: 2199 },
+  { id: 'pyram', event: 'Pyraminx', category: '異形', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Thursday 2023', videoId: '', rawTime: 73 },
+  { id: 'sq1', event: 'Square-1', category: '異形', time: '3.40 秒', holder: 'Hassan Khanani', country: '美國', date: '2026-01-24', competition: 'Steel City Sprint PA 2026', videoId: '', rawTime: 340 },
+  { id: 'skewb', event: 'Skewb', category: '異形', time: '0.73 秒', holder: 'Vojtěch Grohmann', country: '捷克', date: '2026-03-08', competition: 'Głuszyca Open 2026', videoId: '', rawTime: 73 },
 ];
 
 const categories = ['全部', 'NxNxN', '盲解', '特殊', '異形', '其他'];
@@ -243,7 +243,7 @@ export default function WorldRecordsPage() {
                 </a>
               ) : (
                 <a 
-                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`WCA World Record ${record.event} ${record.time.replace(/[秒步]/g, '').trim()}`)}`}
+                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${record.holder} ${record.event} ${record.time.replace(/[秒步]/g, '').trim()} World Record`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"

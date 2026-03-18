@@ -23,23 +23,23 @@ const puzzles = [
 ];
 
 const initialPuzzleRecords: Record<string, any[]> = {
-  '333': [{ type: '單次 (Single)', time: '2.76 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2026-02-08', competition: 'GLS Big Cubes Gdańsk 2026', videoId: 'gh8HX4itF_w', rawTime: 276 }],
-  '222': [{ type: '單次 (Single)', time: '0.39 秒', holder: 'Ziyu Ye', country: '中國', date: '2025-10-25', competition: 'Hefei Open 2025', videoId: 'T6dmPZQczTA', rawTime: 39 }],
-  '444': [{ type: '單次 (Single)', time: '15.18 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2025-12-08', competition: 'Spanish Championship 2025', videoId: 'Q7jjOiM6D5A', rawTime: 1518 }],
-  '555': [{ type: '單次 (Single)', time: '30.45 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2024-11-04', competition: 'Rubik\'s WCA Asian Championship 2024', videoId: '6Hi5t60ZfeI', rawTime: 3045 }],
-  '666': [{ type: '單次 (Single)', time: '57.69 秒', holder: 'Max Park', country: '美國', date: '2025-04-26', competition: 'Burbank Big Cubes 2025', videoId: 'XfOqYgZ-hUw', rawTime: 5769 }],
-  '777': [{ type: '單次 (Single)', time: '1:33.48', holder: 'Max Park', country: '美國', date: '2025-10-04', competition: 'Nub Open Trabuco Hills Fall 2025', videoId: 'vokgLYLDfOk', rawTime: 9348 }],
-  '333bf': [{ type: '單次 (Single)', time: '11.67 秒', holder: 'Charlie Eggins', country: '澳洲', date: '2026-01-11', competition: 'Cubing at The Cube 2026', videoId: 'TPylQiSbW98', rawTime: 1167 }],
-  '333fm': [{ type: '單次 (Single)', time: '16 步', holder: 'Sebastiano Tronto 等', country: '多國', date: '2019-2024', competition: '多場賽事', videoId: 'I0yjjwxonEE', rawTime: 16 }],
-  '333oh': [{ type: '單次 (Single)', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '瑞士', date: '2024-10-06', competition: 'Swiss Nationals 2024', videoId: '88_TpF7WKVo', rawTime: 566 }],
-  'clock': [{ type: '單次 (Single)', time: '1.53 秒', holder: 'Lachlan Gibson', country: '紐西蘭', date: '2025-09-27', competition: 'Hasty Hastings 2025', videoId: 'xtwYy3hgDew', rawTime: 153 }],
-  'minx': [{ type: '單次 (Single)', time: '21.99 秒', holder: 'Timofei Tarasenko', country: '俄羅斯', date: '2025-12-07', competition: 'Tashkent Open 2025', videoId: 'BspXtcUcQeo', rawTime: 2199 }],
-  'pyram': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Thursday 2023', videoId: 'lO262UFJGew', rawTime: 73 }],
-  'sq1': [{ type: '單次 (Single)', time: '3.40 秒', holder: 'Hassan Khanani', country: '美國', date: '2026-01-24', competition: 'Steel City Sprint PA 2026', videoId: '4uH1-Wad35A', rawTime: 340 }],
-  'skewb': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Vojtěch Grohmann', country: '捷克', date: '2026-03-08', competition: 'Głuszyca Open 2026', videoId: '3TqzLSkMg_U', rawTime: 73 }],
-  '444bf': [{ type: '單次 (Single)', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4BLD in a Madison Hall 2023', videoId: 'Us0x_zcNSfU', rawTime: 5196 }],
-  '555bf': [{ type: '單次 (Single)', time: '1:58.59', holder: 'Stanley Chapel', country: '美國', date: '2026-01-04', competition: 'Multi Mayhem VA 2026', videoId: 'apFafRSFXlo', rawTime: 11859 }],
-  '333mbf': [{ type: '單次 (Single)', time: '63/65 58:23', holder: 'Graham Siggins', country: '美國', date: '2025-10-18', competition: 'Please Be Quiet Reno 2025', videoId: 'DKBg78f9DFs', rawTime: 380350302 }],
+  '333': [{ type: '單次 (Single)', time: '2.76 秒', holder: 'Teodor Zajder', country: '波蘭', date: '2026-02-08', competition: 'GLS Big Cubes Gdańsk 2026', videoId: '', rawTime: 276 }],
+  '222': [{ type: '單次 (Single)', time: '0.39 秒', holder: 'Ziyu Ye', country: '中國', date: '2025-10-25', competition: 'Hefei Open 2025', videoId: '', rawTime: 39 }],
+  '444': [{ type: '單次 (Single)', time: '15.18 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2025-12-08', competition: 'Spanish Championship 2025', videoId: '', rawTime: 1518 }],
+  '555': [{ type: '單次 (Single)', time: '30.45 秒', holder: 'Tymon Kolasiński', country: '波蘭', date: '2024-11-04', competition: 'Rubik\'s WCA Asian Championship 2024', videoId: '', rawTime: 3045 }],
+  '666': [{ type: '單次 (Single)', time: '57.69 秒', holder: 'Max Park', country: '美國', date: '2025-04-26', competition: 'Burbank Big Cubes 2025', videoId: '', rawTime: 5769 }],
+  '777': [{ type: '單次 (Single)', time: '1:33.48', holder: 'Max Park', country: '美國', date: '2025-10-04', competition: 'Nub Open Trabuco Hills Fall 2025', videoId: '', rawTime: 9348 }],
+  '333bf': [{ type: '單次 (Single)', time: '11.67 秒', holder: 'Charlie Eggins', country: '澳洲', date: '2026-01-11', competition: 'Cubing at The Cube 2026', videoId: '', rawTime: 1167 }],
+  '333fm': [{ type: '單次 (Single)', time: '16 步', holder: 'Sebastiano Tronto 等', country: '多國', date: '2019-2024', competition: '多場賽事', videoId: '', rawTime: 16 }],
+  '333oh': [{ type: '單次 (Single)', time: '5.66 秒', holder: 'Dhruva Sai Meruva', country: '瑞士', date: '2024-10-06', competition: 'Swiss Nationals 2024', videoId: '', rawTime: 566 }],
+  'clock': [{ type: '單次 (Single)', time: '1.53 秒', holder: 'Lachlan Gibson', country: '紐西蘭', date: '2025-09-27', competition: 'Hasty Hastings 2025', videoId: '', rawTime: 153 }],
+  'minx': [{ type: '單次 (Single)', time: '21.99 秒', holder: 'Timofei Tarasenko', country: '俄羅斯', date: '2025-12-07', competition: 'Tashkent Open 2025', videoId: '', rawTime: 2199 }],
+  'pyram': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Simon Kellum', country: '美國', date: '2023-12-21', competition: 'Middleton Meetup Thursday 2023', videoId: '', rawTime: 73 }],
+  'sq1': [{ type: '單次 (Single)', time: '3.40 秒', holder: 'Hassan Khanani', country: '美國', date: '2026-01-24', competition: 'Steel City Sprint PA 2026', videoId: '', rawTime: 340 }],
+  'skewb': [{ type: '單次 (Single)', time: '0.73 秒', holder: 'Vojtěch Grohmann', country: '捷克', date: '2026-03-08', competition: 'Głuszyca Open 2026', videoId: '', rawTime: 73 }],
+  '444bf': [{ type: '單次 (Single)', time: '51.96 秒', holder: 'Stanley Chapel', country: '美國', date: '2023-01-28', competition: '4BLD in a Madison Hall 2023', videoId: '', rawTime: 5196 }],
+  '555bf': [{ type: '單次 (Single)', time: '1:58.59', holder: 'Stanley Chapel', country: '美國', date: '2026-01-04', competition: 'Multi Mayhem VA 2026', videoId: '', rawTime: 11859 }],
+  '333mbf': [{ type: '單次 (Single)', time: '63/65 58:23', holder: 'Graham Siggins', country: '美國', date: '2025-10-18', competition: 'Please Be Quiet Reno 2025', videoId: '', rawTime: 380350302 }],
 };
 
 const categories = ['全部', 'NxNxN', '盲解', '特殊', '異形', '其他'];
@@ -311,7 +311,7 @@ export default function WCAPuzzlesPage() {
                       </a>
                     ) : (
                       <a 
-                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`WCA World Record ${selectedPuzzle?.name} ${record.time.replace(/[秒步]/g, '').trim()}`)}`}
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${record.holder} ${selectedPuzzle?.name} ${record.time.replace(/[秒步]/g, '').trim()} World Record`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-cyan-400 hover:text-cyan-300 font-medium text-sm flex items-center transition-colors"
