@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { PlayCircle, ChevronDown, ExternalLink } from 'lucide-react';
 
 const tutorials = [
@@ -27,6 +28,23 @@ export default function BasicTutorialsPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 relative">
+      <Helmet>
+        <title>魔術方塊基礎教學 | 3x3 新手入門圖文與影片指南 - DNF Cuber</title>
+        <meta name="description" content="專為新手設計的 3x3 魔術方塊基礎教學。從認識結構、底層十字、到完成六面，提供詳細圖文與精選影片，帶你輕鬆學會解魔術方塊！" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Course",
+            "name": "魔術方塊基礎教學",
+            "description": "專為新手設計的 3x3 魔術方塊基礎教學。從認識結構、底層十字、到完成六面，提供詳細圖文與精選影片，帶你輕鬆學會解魔術方塊！",
+            "provider": {
+              "@type": "Organization",
+              "name": "DNF Cuber",
+              "sameAs": "https://dnfcuber.com"
+            }
+          })}
+        </script>
+      </Helmet>
       <div className="absolute top-20 left-0 w-48 h-48 md:w-72 md:h-72 bg-cyan-500/10 rounded-full blur-[80px] md:blur-[100px] -z-10"></div>
       
       <div className="text-center space-y-3 md:space-y-4 mb-6 md:mb-8">

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { Helmet } from 'react-helmet-async';
 import { Trophy, Globe, Clock, PlayCircle, ChevronDown, ExternalLink, RefreshCw } from 'lucide-react';
 
 const initialRecords = [
@@ -141,6 +142,23 @@ export default function WorldRecordsPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 relative">
+      <Helmet>
+        <title>WCA 魔術方塊世界紀錄總覽 | 最新速解紀錄與影片</title>
+        <meta name="description" content="查詢最新 WCA 魔術方塊世界紀錄。包含 3x3、4x4、盲解等 17 項官方賽事單次紀錄，並提供破紀錄當下的精準 YouTube 影片搜尋連結。" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            "name": "WCA 魔術方塊世界紀錄",
+            "description": "最新 WCA 魔術方塊世界紀錄總覽，包含 3x3、4x4、盲解等 17 項官方賽事單次紀錄。",
+            "url": "https://dnfcuber.com/records",
+            "creator": {
+              "@type": "Organization",
+              "name": "World Cube Association"
+            }
+          })}
+        </script>
+      </Helmet>
       <div className="absolute top-1/4 left-1/4 w-64 h-64 md:w-96 md:h-96 bg-cyan-500/10 rounded-full blur-[100px] md:blur-[150px] -z-10"></div>
       
       <div className="text-center space-y-3 md:space-y-4 mb-8 md:mb-12 relative">

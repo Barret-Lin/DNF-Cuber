@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { BrainCircuit, Send, Loader2, Sparkles, Video, Link as LinkIcon, X, FileVideo, Key, Database, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
@@ -249,6 +250,20 @@ export default function AISolverPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 relative">
+      <Helmet>
+        <title>AI 魔術方塊解法分析 | 智能打亂與最佳路徑計算 - DNF Cuber</title>
+        <meta name="description" content="利用 AI 技術分析魔術方塊打亂狀態，計算最佳解法路徑。輸入你的 Scramble 或上傳影片，讓 AI 幫你找出最有效率的還原步驟！" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "AI 魔術方塊解法分析",
+            "description": "利用 AI 技術分析魔術方塊打亂狀態，計算最佳解法路徑。輸入你的 Scramble 或上傳影片，讓 AI 幫你找出最有效率的還原步驟！",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Any"
+          })}
+        </script>
+      </Helmet>
       <div className="absolute top-0 right-1/4 w-72 h-72 bg-cyan-500/10 rounded-full blur-[120px] -z-10"></div>
       
       <div className="text-center space-y-4 mb-8">

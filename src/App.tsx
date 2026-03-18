@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { HelmetProvider } from 'react-helmet-async';
 import { Menu, X, Home, History, BookOpen, Zap, Trophy, BrainCircuit, CalendarDays, MapPin, Youtube, Video } from 'lucide-react';
 import { ColoredCubeIcon } from './components/ColoredCubeIcon';
 
@@ -67,8 +68,9 @@ export default function App() {
   const CurrentComponent = pages.find((p) => p.id === currentPage)?.component || HomePage;
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen text-slate-200 font-sans selection:bg-cyan-500/30 relative overflow-x-hidden">
+    <HelmetProvider>
+      <ErrorBoundary>
+        <div className="min-h-screen text-slate-200 font-sans selection:bg-cyan-500/30 relative overflow-x-hidden">
         {/* Background Decorations */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/20 rounded-full blur-[120px]"></div>
@@ -191,5 +193,6 @@ export default function App() {
         </div>
       </div>
     </ErrorBoundary>
+    </HelmetProvider>
   );
 }

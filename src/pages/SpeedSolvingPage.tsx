@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Zap, PlayCircle, ChevronDown, ExternalLink } from 'lucide-react';
 
 const speedMethods = [
@@ -27,6 +28,22 @@ export default function SpeedSolvingPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 relative">
+      <Helmet>
+        <title>CFOP 速解公式大全 | OLL, PLL, F2L 進階技巧 - DNF Cuber</title>
+        <meta name="description" content="整理最完整的 CFOP 速解公式表，包含 F2L, OLL, PLL 演算法。提供指法建議與記憶技巧，幫助你突破瓶頸，邁向 Sub-10！" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "CFOP 速解公式大全",
+            "description": "整理最完整的 CFOP 速解公式表，包含 F2L, OLL, PLL 演算法。提供指法建議與記憶技巧，幫助你突破瓶頸，邁向 Sub-10！",
+            "author": {
+              "@type": "Organization",
+              "name": "DNF Cuber"
+            }
+          })}
+        </script>
+      </Helmet>
       <div className="absolute top-40 right-0 w-64 h-64 md:w-80 md:h-80 bg-blue-600/10 rounded-full blur-[100px] md:blur-[120px] -z-10"></div>
       
       <div className="text-center space-y-3 md:space-y-4 mb-6 md:mb-8">

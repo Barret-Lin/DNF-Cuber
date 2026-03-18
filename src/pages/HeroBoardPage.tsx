@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Medal, Globe, Clock, AlertCircle, Loader2, LogIn, LogOut, Upload, Image as ImageIcon, RefreshCw, MapPin, Calendar } from 'lucide-react';
 
@@ -367,6 +368,18 @@ export default function HeroBoardPage() {
 
   return (
     <div className="space-y-8 pb-12">
+      <Helmet>
+        <title>台灣魔術方塊英雄榜 | WCA 國內頂尖選手排名 - DNF Cuber</title>
+        <meta name="description" content="查詢台灣 WCA 魔術方塊官方賽事排名與頂尖選手成績。追蹤國內紀錄保持人，見證台灣速解圈的輝煌時刻！" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "台灣魔術方塊英雄榜",
+            "description": "查詢台灣 WCA 魔術方塊官方賽事排名與頂尖選手成績。追蹤國內紀錄保持人，見證台灣速解圈的輝煌時刻！"
+          })}
+        </script>
+      </Helmet>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-100 flex items-center">

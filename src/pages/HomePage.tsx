@@ -1,10 +1,29 @@
 import { motion } from 'motion/react';
+import { Helmet } from 'react-helmet-async';
 import { Trophy, BrainCircuit, ExternalLink } from 'lucide-react';
 import { ColoredCubeIcon } from '../components/ColoredCubeIcon';
 
 export default function HomePage() {
   return (
     <div className="space-y-12 md:space-y-16 relative">
+      <Helmet>
+        <title>DNF Cuber | 台灣魔術方塊資訊與速解教學平台</title>
+        <meta name="description" content="專為魔術方塊愛好者打造的綜合平台。提供最新 WCA 世界紀錄、各階魔術方塊基礎教學、CFOP 等進階速解技巧、台灣選手英雄榜，以及 AI 最佳解法分析。" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "DNF Cuber",
+            "url": "https://dnfcuber.com/",
+            "description": "專為魔術方塊愛好者打造的綜合平台。提供最新 WCA 世界紀錄、各階魔術方塊基礎教學、CFOP 等進階速解技巧、台灣選手英雄榜，以及 AI 最佳解法分析。",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://dnfcuber.com/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </script>
+      </Helmet>
       {/* Floating Image */}
       <div className="fixed right-4 bottom-8 md:right-8 md:bottom-12 z-40 pointer-events-none select-none hidden sm:block">
         <img 
