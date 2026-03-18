@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Video, Image as ImageIcon, Plus, Trash2, Shield, X, AlertCircle } from 'lucide-react';
+import { Video, Image as ImageIcon, Plus, Trash2, Shield, X, AlertCircle, HardDrive } from 'lucide-react';
 
 interface HighlightItem {
   id: string;
@@ -22,15 +22,33 @@ export default function LiveHighlightsPage() {
   const [newUrl, setNewUrl] = useState('');
   const [newType, setNewType] = useState<'image' | 'youtube'>('image');
   const [warningMessage, setWarningMessage] = useState('');
+  const [storageUsed, setStorageUsed] = useState(0);
+  const STORAGE_LIMIT = 5 * 1024 * 1024; // 5MB limit
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const calculateStorage = () => {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        const item = localStorage.getItem(key);
+        if (item) {
+          total += item.length * 2; // roughly 2 bytes per char
+        }
+      }
+    }
+    setStorageUsed(total);
+  };
 
   useEffect(() => {
     try {
       localStorage.setItem('live_highlights', JSON.stringify(items));
+      calculateStorage();
     } catch (e) {
       if (e instanceof DOMException && e.name === 'QuotaExceededError') {
         setWarningMessage('儲存空間已滿！無法儲存更多圖片或影片。請刪除一些舊項目。');
+        calculateStorage();
         // Revert to previous state if possible, or just let the user know
       } else {
         console.error('Failed to save highlights:', e);
@@ -217,9 +235,29 @@ export default function LiveHighlightsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-slate-900/80 p-6 rounded-2xl border border-purple-500/30 shadow-lg mb-8"
         >
-          <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center">
-            <Plus className="w-5 h-5 mr-2" /> 新增花絮
-          </h3>
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <h3 className="text-lg font-bold text-purple-400 flex items-center m-0">
+              <Plus className="w-5 h-5 mr-2" /> 新增花絮
+            </h3>
+            
+            <div className="flex items-center gap-3 bg-slate-950/50 px-4 py-2 rounded-lg border border-slate-800">
+              <HardDrive className="w-4 h-4 text-slate-400" />
+              <div className="flex-1 min-w-[120px]">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-slate-400">儲存空間使用量</span>
+                  <span className={`${storageUsed > STORAGE_LIMIT * 0.9 ? 'text-red-400' : 'text-slate-300'}`}>
+                    {(storageUsed / (1024 * 1024)).toFixed(2)} / {(STORAGE_LIMIT / (1024 * 1024)).toFixed(0)} MB
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${storageUsed > STORAGE_LIMIT * 0.9 ? 'bg-red-500' : 'bg-purple-500'}`}
+                    style={{ width: `${Math.min(100, (storageUsed / STORAGE_LIMIT) * 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
           
           <div className="space-y-6">
             <div>
