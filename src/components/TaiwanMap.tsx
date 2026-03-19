@@ -10,7 +10,7 @@ L.Icon.Default.mergeOptions({
 });
 
 interface EventLocation {
-  id: number;
+  id: string | number;
   name: string;
   date: string;
   location: string;

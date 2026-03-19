@@ -1,36 +1,100 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { CalendarDays, MapPin, ExternalLink, ArrowUpDown } from 'lucide-react';
+import { CalendarDays, MapPin, ExternalLink, ArrowUpDown, RefreshCw, AlertCircle } from 'lucide-react';
 import { ColoredCubeIcon } from '../components/ColoredCubeIcon';
 import { TaiwanMap } from '../components/TaiwanMap';
 
-const wcaCompetitions = [
-  { id: 1, name: "Please Don't DNF Kaohsiung 2026", date: '2026-04-05 ~ 04-06', location: '高雄市, 中華台北', events: '3x3BF, 3x3FM, Clock, 4x4BF, 5x5BF, 3x3MBLD', link: 'https://www.worldcubeassociation.org/competitions/PleaseDontDNFKaohsiung2026', coordinates: [22.627, 120.301] as [number, number] },
-  { id: 2, name: 'Penghu Spring Cube Open 2026', date: '2026-03-14', location: '澎湖縣, 中華台北', events: '3x3, 2x2, 4x4, Pyraminx', link: 'https://www.worldcubeassociation.org/competitions/PenghuSpringCubeOpen2026', coordinates: [23.567, 119.575] as [number, number] },
-  { id: 3, name: 'Shin Kong Cube Open - Taitung 2025', date: '2025-12-28', location: '台東市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongOpenTaitung2025', coordinates: [22.758, 121.144] as [number, number] },
-  { id: 4, name: 'Taiwan Championship 2025', date: '2025-12-19 ~ 12-21', location: '新北市, 中華台北', events: '全項目 (17項)', link: 'https://www.worldcubeassociation.org/competitions/TaiwanChampionship2025', coordinates: [25.016, 121.462] as [number, number] },
-  { id: 5, name: 'Shin Kong Cube Open - Kaohsiung 2025', date: '2025-12-14', location: '高雄市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongCubeOpenKaohsiung2025', coordinates: [22.627, 120.301] as [number, number] },
-  { id: 6, name: 'Taoyuan Airport Cube Day 2025', date: '2025-11-29 ~ 11-30', location: '桃園市, 中華台北', events: '3x3, 2x2, 4x4, 5x5, Pyraminx, Skewb, Sq-1', link: 'https://www.worldcubeassociation.org/competitions/TaoyuanAirportCubeDay2025', coordinates: [24.993, 121.301] as [number, number] },
-  { id: 7, name: 'Shin Kong Cube Open - Taichung 2025', date: '2025-11-22', location: '台中市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongOpenTaichung2025', coordinates: [24.147, 120.673] as [number, number] },
-  { id: 8, name: 'Shin Kong Cube Open - New Taipei 2025', date: '2025-11-09', location: '新北市, 中華台北', events: '3x3', link: 'https://www.worldcubeassociation.org/competitions/ShinKongCubeOpenNewTaipei2025', coordinates: [25.016, 121.462] as [number, number] },
-  { id: 9, name: 'Please Be Quiet Taiwan 2025', date: '2025-10-18 ~ 10-19', location: '台北市, 中華台北', events: '3x3BF, 3x3FM, 4x4BF, 5x5BF, 3x3MBLD', link: 'https://www.worldcubeassociation.org/competitions/PleaseBeQuietTaiwan2025', coordinates: [25.032, 121.565] as [number, number] },
-];
+const eventMap: Record<string, string> = {
+  '333': '3x3',
+  '222': '2x2',
+  '444': '4x4',
+  '555': '5x5',
+  '666': '6x6',
+  '777': '7x7',
+  '333bf': '3x3BF',
+  '333fm': '3x3FM',
+  '333oh': '3x3OH',
+  'clock': 'Clock',
+  'minx': 'Megaminx',
+  'pyram': 'Pyraminx',
+  'skewb': 'Skewb',
+  'sq1': 'Sq-1',
+  '444bf': '4x4BF',
+  '555bf': '5x5BF',
+  '333mbf': '3x3MBLD'
+};
+
+interface WCACompetition {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  events: string;
+  link: string;
+  coordinates: [number, number];
+}
 
 export default function WCASchedulePage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [competitions, setCompetitions] = useState<WCACompetition[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const oneYearLater = new Date(now);
-  oneYearLater.setFullYear(now.getFullYear() + 1);
+  const fetchCompetitions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const now = new Date();
+      const startDateStr = now.toISOString().split('T')[0];
+      
+      const oneYearLater = new Date(now);
+      oneYearLater.setFullYear(now.getFullYear() + 1);
+      const endDateStr = oneYearLater.toISOString().split('T')[0];
 
-  const sortedCompetitions = wcaCompetitions
-    .filter(comp => {
-      const startDateStr = comp.date.split(' ~ ')[0];
-      const startDate = new Date(startDateStr);
-      return startDate >= now && startDate <= oneYearLater;
-    })
-    .sort((a, b) => {
+      const response = await fetch(`https://www.worldcubeassociation.org/api/v0/competitions?country_iso2=TW&start=${startDateStr}&end=${endDateStr}&sort=start_date`);
+      
+      if (!response.ok) {
+        throw new Error('無法取得 WCA 賽事資料');
+      }
+
+      const data = await response.json();
+      
+      const formattedComps: WCACompetition[] = data.map((comp: any) => {
+        let dateStr = comp.start_date;
+        if (comp.start_date !== comp.end_date) {
+          const endMonthDay = comp.end_date.substring(5);
+          dateStr = `${comp.start_date} ~ ${endMonthDay}`;
+        }
+
+        const eventsStr = comp.event_ids
+          .map((id: string) => eventMap[id] || id)
+          .join(', ');
+
+        return {
+          id: comp.id,
+          name: comp.name,
+          date: dateStr,
+          location: `${comp.city}, 中華台北`,
+          events: eventsStr || '未定',
+          link: comp.url,
+          coordinates: [comp.latitude_degrees, comp.longitude_degrees] as [number, number]
+        };
+      });
+
+      setCompetitions(formattedComps);
+    } catch (err) {
+      console.error(err);
+      setError('載入賽事資料時發生錯誤，請稍後再試。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompetitions();
+  }, []);
+
+  const sortedCompetitions = [...competitions].sort((a, b) => {
     const dateA = new Date(a.date.split(' ~ ')[0]).getTime();
     const dateB = new Date(b.date.split(' ~ ')[0]).getTime();
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
@@ -49,66 +113,94 @@ export default function WCASchedulePage() {
         </p>
       </div>
 
-      {sortedCompetitions.length > 0 && (
-        <div className="mb-10">
-          <TaiwanMap events={sortedCompetitions} />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <RefreshCw className="w-8 h-8 text-cyan-500 animate-spin" />
+          <p className="text-slate-400">正在載入賽事資料...</p>
         </div>
-      )}
+      ) : error ? (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 flex flex-col items-center text-center space-y-4">
+          <AlertCircle className="w-10 h-10 text-red-400" />
+          <p className="text-red-300">{error}</p>
+          <button
+            onClick={fetchCompetitions}
+            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors flex items-center"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            重新嘗試
+          </button>
+        </div>
+      ) : (
+        <>
+          {sortedCompetitions.length > 0 && (
+            <div className="mb-10">
+              <TaiwanMap events={sortedCompetitions} />
+            </div>
+          )}
 
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-          className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700"
-        >
-          <ArrowUpDown className="w-4 h-4 mr-2 text-cyan-400" />
-          時間排序: {sortOrder === 'asc' ? '由近到遠' : '由遠到近'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {sortedCompetitions.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-slate-400">
-            目前一年內沒有即將舉辦的賽事
-          </div>
-        ) : (
-          sortedCompetitions.map((comp, index) => (
-            <motion.div
-              key={comp.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-slate-900/50 backdrop-blur-sm p-5 md:p-6 rounded-2xl shadow-lg border border-slate-800 hover:border-cyan-500/30 transition-colors flex flex-col h-full"
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <button
+              onClick={fetchCompetitions}
+              className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700 w-full sm:w-auto justify-center"
             >
-            <h3 className="text-lg md:text-xl font-bold text-slate-100 mb-4">{comp.name}</h3>
-            
-            <div className="space-y-3 flex-grow">
-              <div className="flex items-start text-slate-300">
-                <CalendarDays className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0 mt-0.5" />
-                <span className="font-mono text-sm md:text-base">{comp.date}</span>
-              </div>
-              <div className="flex items-start text-slate-300">
-                <MapPin className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0 mt-0.5" />
-                <span className="text-sm md:text-base">{comp.location}</span>
-              </div>
-              <div className="flex items-start text-slate-300">
-                <ColoredCubeIcon className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-                <span className="text-sm md:text-base leading-relaxed">{comp.events}</span>
-              </div>
-            </div>
+              <RefreshCw className="w-4 h-4 mr-2 text-cyan-400" />
+              手動更新賽程
+            </button>
+            <button
+              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700 w-full sm:w-auto justify-center"
+            >
+              <ArrowUpDown className="w-4 h-4 mr-2 text-cyan-400" />
+              時間排序: {sortOrder === 'asc' ? '由近到遠' : '由遠到近'}
+            </button>
+          </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-800">
-              <a 
-                href={comp.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-cyan-400 transition-colors"
-              >
-                查看 WCA 賽事詳情 <ExternalLink className="w-4 h-4 ml-1.5" />
-              </a>
-            </div>
-          </motion.div>
-        )))}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {sortedCompetitions.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-slate-400">
+                目前一年內沒有即將舉辦的賽事
+              </div>
+            ) : (
+              sortedCompetitions.map((comp, index) => (
+                <motion.div
+                  key={comp.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-slate-900/50 backdrop-blur-sm p-5 md:p-6 rounded-2xl shadow-lg border border-slate-800 hover:border-cyan-500/30 transition-colors flex flex-col h-full"
+                >
+                <h3 className="text-lg md:text-xl font-bold text-slate-100 mb-4">{comp.name}</h3>
+                
+                <div className="space-y-3 flex-grow">
+                  <div className="flex items-start text-slate-300">
+                    <CalendarDays className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <span className="font-mono text-sm md:text-base">{comp.date}</span>
+                  </div>
+                  <div className="flex items-start text-slate-300">
+                    <MapPin className="w-5 h-5 mr-3 text-cyan-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base">{comp.location}</span>
+                  </div>
+                  <div className="flex items-start text-slate-300">
+                    <ColoredCubeIcon className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base leading-relaxed">{comp.events}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-800">
+                  <a 
+                    href={comp.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-sm font-medium text-slate-400 hover:text-cyan-400 transition-colors"
+                  >
+                    查看 WCA 賽事詳情 <ExternalLink className="w-4 h-4 ml-1.5" />
+                  </a>
+                </div>
+              </motion.div>
+            )))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
