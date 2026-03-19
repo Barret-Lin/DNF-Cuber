@@ -53,7 +53,7 @@ export default function HeroBoardPage() {
 
   useEffect(() => {
     if (displayedUser?.wca_id) {
-      const savedAvatar = localStorage.getItem(`custom_avatar_${displayedUser.wca_id}`);
+      const savedAvatar = sessionStorage.getItem(`custom_avatar_${displayedUser.wca_id}`);
       if (savedAvatar) {
         setCustomAvatar(savedAvatar);
       } else {
@@ -152,7 +152,7 @@ export default function HeroBoardPage() {
       setCustomAvatar(base64String);
       if (displayedUser?.wca_id) {
         try {
-          localStorage.setItem(`custom_avatar_${displayedUser.wca_id}`, base64String);
+          sessionStorage.setItem(`custom_avatar_${displayedUser.wca_id}`, base64String);
         } catch (e) {
           if (e instanceof DOMException && e.name === 'QuotaExceededError') {
             alert('儲存空間已滿！無法儲存自訂頭像。');

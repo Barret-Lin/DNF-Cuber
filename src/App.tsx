@@ -65,6 +65,16 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // 確保離開網頁時徹底清除所有本地與暫存資料 (包含任何可能的 API Key 或敏感資訊)
+  React.useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.clear();
+      localStorage.clear();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   const CurrentComponent = pages.find((p) => p.id === currentPage)?.component || HomePage;
 
   return (

@@ -41,6 +41,14 @@ export default function AISolverPage() {
     }
   }, [apiKey, defaultApiKey]);
 
+  // 確保元件卸載時清除 API Key 記憶體
+  useEffect(() => {
+    return () => {
+      setApiKey('');
+      setTempApiKey('');
+    };
+  }, []);
+
   const handleAskAI = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!query.trim() && !videoFile && !youtubeLink) return;
