@@ -1,11 +1,124 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Zap, PlayCircle, ChevronDown, ExternalLink } from 'lucide-react';
+import 'cubing/twisty';
+
+// Wrapper component to avoid JSX intrinsic element type errors
+const TwistyPlayerWrapper = ({ alg, setupAlg, puzzle = '3x3x3' }: { alg: string, setupAlg?: string, puzzle?: string }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // Clear previous content
+    containerRef.current.innerHTML = '';
+    
+    // Create element dynamically
+    const player = document.createElement('twisty-player');
+    player.setAttribute('puzzle', puzzle);
+    player.setAttribute('alg', alg);
+    if (setupAlg) {
+      player.setAttribute('setup-alg', setupAlg);
+    }
+    player.setAttribute('control-panel', 'bottom-row');
+    player.setAttribute('background', 'none');
+    player.style.width = '100%';
+    player.style.height = '100%';
+    
+    containerRef.current.appendChild(player);
+    
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [alg, setupAlg, puzzle]);
+
+  return <div ref={containerRef} className="w-full h-full" />;
+};
 
 const speedMethods = [
-  { id: '333', title: '3x3x3: CFOP', puzzle: '3x3x3 Cube', desc: '最主流的速解法，分為 Cross, F2L, OLL, PLL。', steps: [{name: 'Cross', desc: '在底面（通常為白色）建立一個十字。核心目標是觀察打亂狀態，在 8 步以內規劃好四個邊塊的相對位置，並流暢地一次性放入底層，為後續步驟打下穩固基礎。'}, {name: 'F2L', desc: 'First 2 Layers。核心目標是將底層角塊與對應的第二層邊塊在頂層配對，然後一併放入槽位（Slot）。這階段極度仰賴「預判（Look-ahead）」，在放入一組方塊的同時，眼睛必須尋找下一組的目標。'}, {name: 'OLL', desc: 'Orientation of the Last Layer。透過辨識頂層黃色方塊的 57 種不同形狀（如點、線、拐角或特定圖形），使用對應的公式，一次性將頂面所有方塊翻轉為黃色朝上。'}, {name: 'PLL', desc: 'Permutation of the Last Layer。觀察頂層側面顏色的排列特徵（如車頭燈、大色塊），從 21 個公式中選出對應解法，將所有頂層方塊交換至正確位置，完成整顆魔方。'}], videoId: 'Tvt85mW28vo' },
-  { id: '222', title: '2x2x2: EG Method', puzzle: '2x2x2 Cube', desc: '高階 2x2 玩法，只需一面即可直接解決剩餘所有方塊。', steps: [{name: 'Face', desc: '快速在底層建立一個同色面。與層先法不同，EG 允許底層側邊顏色不一致，這大幅減少了完成底面的步數，讓選手能在觀察階段就完全預判底面走向。'}, {name: 'EG-1/EG-2/CLL', desc: '根據底層側邊的排列狀態（完全正確、相鄰交換、對角交換），配合頂層的 OLL 形狀，從多達 120 個公式中選擇對應解法，一步同時完成頂面翻轉與上下層排列。'}], videoId: '30IF6qW3cNg' },
-  { id: '444', title: '4x4x4: Yau Method', puzzle: '4x4x4 Cube', desc: '由 Robert Yau 發明，提前完成底層十字，大幅優化 3x3 階段的觀察。', steps: [{name: '雙中心', desc: '首先在左右兩側完成兩個相對的中心（通常是白與黃）。這能限制後續組邊的範圍，讓尋找方塊的過程更集中。'}, {name: '三邊', desc: '在完成剩餘四個中心之前，先組裝三個底層的十字邊塊並放入正確位置。這個創新的步驟能讓後續的 3x3 階段省去尋找底層十字的時間。'}, {name: '剩餘中心', desc: '利用尚未放入底邊的「空槽（Keyhole）」作為緩衝區，在不破壞已完成的三個底邊的情況下，快速完成側面的四個中心塊。'}, {name: '最後一邊與組邊', desc: '完成最後一個底邊形成完整十字後，使用 3-2-3 或 3-3-2 的邊塊配對技巧（Edge Pairing），一次性且有系統地處理剩餘的邊塊，大幅減少視線停頓。'}], videoId: 'YYHpac-4JL4' },
+  { 
+    id: '333', 
+    title: '3x3x3: CFOP', 
+    puzzle: '3x3x3 Cube', 
+    desc: '最主流的速解法，分為 Cross, F2L, OLL, PLL。', 
+    steps: [
+      {
+        name: 'Cross', 
+        desc: '在底面（通常為白色）建立一個十字。核心目標是觀察打亂狀態，在 8 步以內規劃好四個邊塊的相對位置，並流暢地一次性放入底層，為後續步驟打下穩固基礎。',
+        alg: "D R' D' R",
+        setupAlg: "R' D R D'"
+      }, 
+      {
+        name: 'F2L', 
+        desc: 'First 2 Layers。核心目標是將底層角塊與對應的第二層邊塊在頂層配對，然後一併放入槽位（Slot）。這階段極度仰賴「預判（Look-ahead）」，在放入一組方塊的同時，眼睛必須尋找下一組的目標。',
+        alg: "U R U' R'",
+        setupAlg: "R U R' U'"
+      }, 
+      {
+        name: 'OLL', 
+        desc: 'Orientation of the Last Layer。透過辨識頂層黃色方塊的 57 種不同形狀（如點、線、拐角或特定圖形），使用對應的公式，一次性將頂面所有方塊翻轉為黃色朝上。',
+        alg: "F R U R' U' F'",
+        setupAlg: "F U R U' R' F'"
+      }, 
+      {
+        name: 'PLL', 
+        desc: 'Permutation of the Last Layer。觀察頂層側面顏色的排列特徵（如車頭燈、大色塊），從 21 個公式中選出對應解法，將所有頂層方塊交換至正確位置，完成整顆魔方。',
+        alg: "R U R' U' R' F R2 U' R' U' R U R' F'",
+        setupAlg: "F R U' R' U R U R2 F' R U R U' R'"
+      }
+    ], 
+    videoId: 'Tvt85mW28vo' 
+  },
+  { 
+    id: '222', 
+    title: '2x2x2: EG Method', 
+    puzzle: '2x2x2 Cube', 
+    desc: '高階 2x2 玩法，只需一面即可直接解決剩餘所有方塊。', 
+    steps: [
+      {
+        name: 'Face', 
+        desc: '快速在底層建立一個同色面。與層先法不同，EG 允許底層側邊顏色不一致，這大幅減少了完成底面的步數，讓選手能在觀察階段就完全預判底面走向。',
+        alg: "R U R' U'",
+        setupAlg: "U R U' R'"
+      }, 
+      {
+        name: 'EG-1/EG-2/CLL', 
+        desc: '根據底層側邊的排列狀態（完全正確、相鄰交換、對角交換），配合頂層的 OLL 形狀，從多達 120 個公式中選擇對應解法，一步同時完成頂面翻轉與上下層排列。',
+        alg: "R U R' U' R' F R2 U' R' U' R U R' F'",
+        setupAlg: "F R U' R' U R U R2 F' R U R U' R'"
+      }
+    ], 
+    videoId: '30IF6qW3cNg' 
+  },
+  { 
+    id: '444', 
+    title: '4x4x4: Yau Method', 
+    puzzle: '4x4x4 Cube', 
+    desc: '由 Robert Yau 發明，提前完成底層十字，大幅優化 3x3 階段的觀察。', 
+    steps: [
+      {
+        name: '雙中心', 
+        desc: '首先在左右兩側完成兩個相對的中心（通常是白與黃）。這能限制後續組邊的範圍，讓尋找方塊的過程更集中。'
+      }, 
+      {
+        name: '三邊', 
+        desc: '在完成剩餘四個中心之前，先組裝三個底層的十字邊塊並放入正確位置。這個創新的步驟能讓後續的 3x3 階段省去尋找底層十字的時間。'
+      }, 
+      {
+        name: '剩餘中心', 
+        desc: '利用尚未放入底邊的「空槽（Keyhole）」作為緩衝區，在不破壞已完成的三個底邊的情況下，快速完成側面的四個中心塊。'
+      }, 
+      {
+        name: '最後一邊與組邊', 
+        desc: '完成最後一個底邊形成完整十字後，使用 3-2-3 或 3-3-2 的邊塊配對技巧（Edge Pairing），一次性且有系統地處理剩餘的邊塊，大幅減少視線停頓。',
+        alg: "Uw' R U R' F R' F' R Uw",
+        setupAlg: "Uw' R' F R F' R U' R' Uw"
+      }
+    ], 
+    videoId: 'YYHpac-4JL4' 
+  },
   { id: '555', title: '5x5x5: Yau5 / Redux', puzzle: '5x5x5 Cube', desc: '結合 Yau Method 的概念應用於 5x5，或使用傳統的 Free Slice 降階。', steps: [{name: '中心', desc: '利用 1x2 或 1x3 的長條區塊（Blockbuilding）概念，由內而外有系統地組合出六個 3x3 大小的中心。熟練的選手會善用半完成的中心來減少轉動步數。'}, {name: '邊塊', desc: '利用中間層（M/E/S）的自由轉動（Free Slice），將散落的邊塊集中到同一條軌道上進行配對。核心目標是減少整體翻轉魔方的次數。'}, {name: 'L4E', desc: 'Last 4 Edges。當剩下最後四個邊塊時，Free Slice 的空間受限，需要使用特定的 L4E 公式或替換技巧來完成最後的配對，並處理可能出現的單邊翻轉 Parity。'}], videoId: 'd1I-jJlVwB4' },
   { id: '666', title: '6x6x6: Redux', puzzle: '6x6x6 Cube', desc: '大型魔方主流速解法，重點在於中心塊的觀察與指法。', steps: [{name: '中心', desc: '6x6 沒有固定中心塊，因此必須自行牢記正確的顏色相對位置。通常採用「由內而外（先建構 2x2 中心再擴展）」的策略，確保中心區塊的正確性。'}, {name: '組邊', desc: '將四個同色邊塊組合成一組。由於邊塊數量眾多，觀察力是關鍵。選手會利用多重軌道同時進行配對，以最大化每一次轉動的效益。'}, {name: 'Parity', desc: '在降階為 3x3 後，由於偶數階的特性，極有可能遇到單邊翻轉（OLL Parity）或兩邊互換（PLL Parity）的特殊情況，必須熟練掌握這些長公式。'}], videoId: 'SkZ9UadAOvQ' },
   { id: '777', title: '7x7x7: Redux', puzzle: '7x7x7 Cube', desc: '最高階官方賽事，考驗極致的觀察力與耐力。', steps: [{name: '中心', desc: '7x7 的中心區域廣達 5x5，是耗時最長的階段。核心目標是保持視線的連貫性，利用長條建構法（Bar building）逐一完成六個面的中心。'}, {name: '組邊', desc: '在龐大的方塊群中尋找五個同色邊塊並進行配對。這階段極度考驗眼力與耐心，通常會結合 Free Slice 技巧來提高配對效率。'}, {name: '3x3', desc: '降階完成後，將其視為一顆巨大的 3x3 進行復原。由於 7x7 結構複雜，轉動時必須保持平穩，避免方塊噴飛（Pop）導致前功盡棄。'}], videoId: 'TxQStyDEwdU' },
@@ -105,6 +218,29 @@ export default function SpeedSolvingPage() {
                 <div>
                   <h4 className="text-base md:text-lg font-semibold text-slate-200">{step.name}</h4>
                   <p className="text-sm md:text-base text-slate-400 mt-1 leading-relaxed">{step.desc}</p>
+                  
+                  {/* 3D Animation Player */}
+                  {(step as any).alg && (
+                    <div className="mt-4 w-full max-w-xs bg-slate-800/50 rounded-xl p-3 border border-slate-700/50 shadow-inner">
+                      <div className="aspect-square w-full relative rounded-lg overflow-hidden bg-slate-900/50">
+                        <TwistyPlayerWrapper 
+                          puzzle={(activeMethod as any).id === '333' ? '3x3x3' : 
+                                 (activeMethod as any).id === '222' ? '2x2x2' :
+                                 (activeMethod as any).id === '444' ? '4x4x4' :
+                                 (activeMethod as any).id === '555' ? '5x5x5' :
+                                 (activeMethod as any).id === 'megaminx' ? 'megaminx' :
+                                 (activeMethod as any).id === 'pyraminx' ? 'pyraminx' :
+                                 (activeMethod as any).id === 'sq1' ? 'square1' :
+                                 (activeMethod as any).id === 'skewb' ? 'skewb' : '3x3x3'} 
+                          alg={(step as any).alg} 
+                          setupAlg={(step as any).setupAlg} 
+                        />
+                      </div>
+                      <div className="text-center mt-3 font-mono text-cyan-400 text-sm font-bold bg-slate-900/50 py-1.5 px-3 rounded-lg border border-cyan-500/20">
+                        {(step as any).alg}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
